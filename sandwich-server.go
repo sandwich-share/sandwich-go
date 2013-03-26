@@ -71,6 +71,7 @@ func main() {
 
 	go peerListMonitor(peerMetaChan)
 
+	http.HandleFunc("/", indexForHandler)
 	http.HandleFunc("/peerlist", peerListHandler)
 	http.HandleFunc("/ping", pingHandler)
 	http.HandleFunc("/indexfor", indexForHandler)
