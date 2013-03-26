@@ -68,3 +68,15 @@ After receiving another node's peer list, the hashes for each peer's index in th
 `GET /file?path=[path]`
 
 **Response** The file at `path` with the root at the root of the share folder.
+
+
+#Local Client
+
+The local client is responsible for building the local file index, executing searches, and displaying a UI. The default UI is via the browser, but other implementations are possible.
+
+This section is still under construction, come back later.
+
+
+#IRC Client
+
+Ideally we want to have an imbedded IRC client in the UI. This hasn't really been fleshed out much, so come back later :)
