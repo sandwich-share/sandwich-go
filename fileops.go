@@ -5,14 +5,17 @@ import(
 	"net"
 	"crypto/md5"
 	"strconv"
+	"io/ioutil"
+	"log"
+	"sandwich-go/addresslist"
 )
 
-const SandwichFolderName = "Sandwich"
-const ConfigFolderName = "conf"
+const SandwichDirName = "Sandwich"
+const ConfigDirName = "conf"
 
 // Quick way to make a path for a config file
 func ConfPath(newPath string) string {
-	return path.Join("conf", newPath)
+	return path.Join(ConfigDirName, newPath)
 }
 
 func ComputeHash(address net.IP) int {
@@ -34,5 +37,13 @@ func GetPort(address net.IP) string {
 	}
 	port := ComputeHash(address)
 	return ":" + strconv.Itoa(port)
+}
+
+func Save(list addresslist.IPSlice) {
+	json := list.String()
+	err := ioutil.WriteFile(ConfPath("peerlist"), []byte(json), 0777)
+	if err != nil {
+		log.Println(err)
+	}
 }
 

@@ -8,7 +8,7 @@ import(
 	"net"
 )
 
-var AddressList *addresslist.SafeIPList
+var AddressList *addresslist.SafeIPList //Thread safe
 
 func InitializeAddressList() {
 	path := ConfPath("peerlist")
@@ -24,7 +24,7 @@ func InitializeAddressList() {
 	} else if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	data, err := ioutil.ReadAll(file)
 	if err != nil {
 		log.Fatal(err)
@@ -32,13 +32,12 @@ func InitializeAddressList() {
 	iplist := addresslist.FromString(string(data))
 	AddressList = addresslist.New(iplist)
 	log.Println("Loaded AddressList from file")
-	log.Println("First address: ", iplist[0].String())
 }
 
 //TODO: Make a BootStrap that does something reasonable
 func BootStrap() {
 	iplist := make(addresslist.IPSlice, 1)
-	iplist[0] = net.ParseIP("127.0.0.1")
+	iplist[0] = net.IPv4(127, 0, 0, 1)
 	AddressList = addresslist.New(iplist)
 }
 

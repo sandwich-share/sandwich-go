@@ -5,6 +5,7 @@ import(
 	"net"
 )
 
+// A thread safe wrapper around an IPSlice
 type SafeIPList struct {
 	list IPSlice
 	m sync.Mutex
