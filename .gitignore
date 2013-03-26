@@ -24,3 +24,5 @@ _testmain.go
 # The binary
 sandwich-go
 
+# config files
+peerlist

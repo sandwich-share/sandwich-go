@@ -3,30 +3,36 @@ package main
 import(
 	"os"
 	"log"
-	"io"
-	"addresslist"
+	"io/ioutil"
+	"sandwich-go/addresslist"
 	"net"
 )
 
 var AddressList *addresslist.SafeIPList
 
 func InitializeAddressList() {
-	path := ConfPath("addresslist")
-	file, err := Open(path)
-	if err != nil && err != ErrNotExist {
-		//The address list does not exist
-		log.Println("The addresslist must be created")
+	path := ConfPath("peerlist")
+	file, err := os.Open(path)
+
+	pathErr, ok := err.(*os.PathError)
+	if err != nil && ok && pathErr.Err.Error() == "no such file or directory" { //Yeah, this is pretty bad but the library 
+		// did not expose a constant to represent this
+
+		log.Println(err)
 		BootStrap() //This bootstraps us into the network
 		return
 	} else if err != nil {
 		log.Fatal(err)
 	}
+	
 	data, err := ioutil.ReadAll(file)
 	if err != nil {
 		log.Fatal(err)
 	}
-	iplist := FromString(data)
+	iplist := addresslist.FromString(string(data))
 	AddressList = addresslist.New(iplist)
+	log.Println("Loaded AddressList from file")
+	log.Println("First address: ", iplist[0].String())
 }
 
 //TODO: Make a BootStrap that does something reasonable

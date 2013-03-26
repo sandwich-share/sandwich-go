@@ -18,7 +18,7 @@ func indexForHandler(w http.ResponseWriter, req *http.Request) {
 
 func peerListHandler(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Content-Type", "text/json")
-	addressList := AddressList.Copy() //Gets a copy of the underlying IPSlice
+	addressList := AddressList.Contents() //Gets a copy of the underlying IPSlice
 	writer.Write([]byte(addressList.String())) //creates a json representation of addressList
 }
 
