@@ -13,12 +13,12 @@ func (ipList IPSlice) String() string {
 	if err != nil {
 		log.Println(err)
 	}
-	return json
+	return string(json)
 }
 
 func FromString(json string) IPSlice {
 	ipList := make(IPSlice, 10)
-	err := json.Unmarshal(json, ipList)
+	err := json.Unmarshal([]byte(json), ipList)
 	if err != nil {
 		log.Println(err)
 	}
