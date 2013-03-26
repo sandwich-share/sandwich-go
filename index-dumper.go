@@ -1,4 +1,4 @@
-package dumper
+package main
 
 import "io/ioutil"
 
