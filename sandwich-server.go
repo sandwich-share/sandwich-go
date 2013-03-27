@@ -12,8 +12,10 @@ func pingHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func indexForHandler(w http.ResponseWriter, req *http.Request) {
-	w.Header().Set("Content-Type", "text/plain")
-	w.Write([]byte("This is an example server.\n"))
+	w.Header().Set("Content-Type", "text/json")
+	listCopy := FileIndex.Copy()
+	w.Write(listCopy.Marshal())
+	log.Println("Sent index")
 }
 
 func peerListHandler(writer http.ResponseWriter, request *http.Request) {
@@ -27,6 +29,7 @@ func peerListHandler(writer http.ResponseWriter, request *http.Request) {
 func main() {
 
 	InitializeAddressList()
+	InitializeFileIndex()
 
 	http.HandleFunc("/", indexForHandler)
 	http.HandleFunc("/peerlist", peerListHandler)
