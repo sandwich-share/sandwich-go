@@ -32,9 +32,10 @@ func main() {
 	InitializeFileIndex()
 
 	http.HandleFunc("/", indexForHandler)
-	http.HandleFunc("/peerlist", peerListHandler)
-	http.HandleFunc("/ping", pingHandler)
-	http.HandleFunc("/indexfor", indexForHandler)
+	http.HandleFunc("/peerlist/", peerListHandler)
+	http.HandleFunc("/ping/", pingHandler)
+	http.HandleFunc("/indexfor/", indexForHandler)
+	http.Handle("/file/", http.StripPrefix("/file/", http.FileServer(http.Dir("/home/brendan/sandwich"))))
 
 	log.Printf("About to listen on 8000. Go to http://127.0.0.1:8000/")
 	err := http.ListenAndServe(":8000", nil)
