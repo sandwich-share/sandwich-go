@@ -2,12 +2,14 @@ package main
 
 import(
 	"os"
+	"os/user"
+	"path"
 	"log"
 	"io/ioutil"
 	"sandwich-go/addresslist"
 	"net"
-	"time"
 	"sandwich-go/fileindex"
+	"sandwich-go/directory"
 )
 
 var AddressList *addresslist.SafeIPList //Thread safe
@@ -37,20 +39,27 @@ func InitializeAddressList() {
 	log.Println("Loaded AddressList from file")
 }
 
-//TODO: Make an initializer that does something useful
+func InitializePaths() {
+	usr, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
+	HomePath = usr.HomeDir
+	SandwichPath = path.Join(HomePath, SandwichDirName)
+}
+
 func InitializeFileIndex() {
-	fileList := &fileindex.FileList{}
-	fileList.List = append(fileList.List, &fileindex.FileItem{"foo", 123, 123}, &fileindex.FileItem{"bar", 456, 456},
-		&fileindex.FileItem{"something", 789, 789}, &fileindex.FileItem{"XXX", 69, 69}, &fileindex.FileItem{"The Devil", 666, 666})
-	FileIndex = fileindex.New(fileList)
-	FileIndex.RemoveAt(1, 4)
-	FileIndex.UpdateHash()
+	FileIndex = fileindex.New(directory.BuildFileIndex(SandwichPath))
 }
 
 //TODO: Make a BootStrap that does something reasonable
 func BootStrap() {
 	iplist := make(addresslist.PeerList, 1)
-	iplist[0] = &addresslist.PeerItem{net.IPv4(127, 0, 0, 1), 0, time.Now()}
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		log.Fatal(err)
+	}
+	iplist[0] = &addresslist.PeerItem{net.ParseIP(addrs[3].String()), FileIndex.IndexHash(), FileIndex.TimeStamp()}
 	AddressList = addresslist.New(iplist)
 	log.Println("Created new peerlist")
 }

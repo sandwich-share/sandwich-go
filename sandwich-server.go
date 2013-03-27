@@ -28,8 +28,9 @@ func peerListHandler(writer http.ResponseWriter, request *http.Request) {
 
 func main() {
 
-	InitializeAddressList()
+	InitializePaths()
 	InitializeFileIndex()
+	InitializeAddressList()
 
 	http.HandleFunc("/", indexForHandler)
 	http.HandleFunc("/peerlist/", peerListHandler)

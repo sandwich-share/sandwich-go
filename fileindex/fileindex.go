@@ -4,6 +4,8 @@ import(
 	"log"
 	"encoding/json"
 	"time"
+	"encoding/binary"
+	"hash/crc32"
 )
 
 type FileItem struct {
@@ -71,5 +73,19 @@ func (list *FileList) RemoveAt(indexList ...int) {
 		}
 	}
 	list.List = list.List[:len(list.List) - subtract]
+}
+
+func (list *FileList) UpdateHash() {
+	data := make([]byte, 1)
+	for _, item := range list.List {
+		buffer := make([]byte, 8)
+		data = append(data, []byte(item.FileName)...)
+		binary.PutUvarint(buffer, item.Size)
+		data = append(data, buffer...)
+		binary.PutUvarint(buffer, uint64(item.CheckSum))
+		data = append(data, buffer...)
+	}
+	list.IndexHash = crc32.ChecksumIEEE(data)
+	list.TimeStamp = time.Now()
 }
 

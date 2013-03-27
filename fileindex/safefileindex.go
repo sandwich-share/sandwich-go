@@ -2,9 +2,7 @@ package fileindex
 
 import(
 	"sync"
-	"hash/crc32"
 	"time"
-	"encoding/binary"
 )
 
 type SafeFileList struct {
@@ -43,6 +41,20 @@ func (list *SafeFileList) Copy() *FileList {
 	return retVal
 }
 
+func (list *SafeFileList) TimeStamp() time.Time {
+	list.m.RLock()
+	retVal := list.fileList.TimeStamp
+	list.m.RUnlock()
+	return retVal
+}
+
+func (list *SafeFileList) IndexHash() uint32 {
+	list.m.RLock()
+	retVal := list.fileList.IndexHash
+	list.m.RUnlock()
+	return retVal
+}
+
 func (list *SafeFileList) RemoveAt(indexs ...int) {
 	list.m.Lock()
 	list.fileList.RemoveAt(indexs...)
@@ -50,18 +62,8 @@ func (list *SafeFileList) RemoveAt(indexs ...int) {
 }
 
 func (list *SafeFileList) UpdateHash() {
-	list.m.RLock()
-	data := make([]byte, 1)
-	for _, item := range list.fileList.List {
-		buffer := make([]byte, 8)
-		data = append(data, []byte(item.FileName)...)
-		binary.PutUvarint(buffer, item.Size)
-		data = append(data, buffer...)
-		binary.PutUvarint(buffer, uint64(item.CheckSum))
-		data = append(data, buffer...)
-	}
-	list.fileList.IndexHash = crc32.ChecksumIEEE(data)
-	list.fileList.TimeStamp = time.Now()
-	list.m.RUnlock()
+	list.m.Lock()
+	list.fileList.UpdateHash()
+	list.m.Unlock()
 }
 

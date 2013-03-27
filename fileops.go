@@ -10,8 +10,11 @@ import(
 	"sandwich-go/addresslist"
 )
 
-const SandwichDirName = "Sandwich"
+const SandwichDirName = "sandwich"
 const ConfigDirName = "conf"
+
+var HomePath string
+var SandwichPath string
 
 // Quick way to make a path for a config file
 func ConfPath(newPath string) string {
