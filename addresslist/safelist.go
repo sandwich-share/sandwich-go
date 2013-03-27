@@ -2,40 +2,39 @@ package addresslist
 
 import(
 	"sync"
-	"net"
 )
 
 // A thread safe wrapper around an IPSlice
 type SafeIPList struct {
-	list IPSlice
+	list PeerList
 	m sync.Mutex
 }
 
-func New(list IPSlice) *SafeIPList {
+func New(list PeerList) *SafeIPList {
 	var mutex sync.Mutex
 	return &SafeIPList{list, mutex}
 }
 
-func (list *SafeIPList) Add(address net.IP) {
+func (list *SafeIPList) Add(entry *PeerItem) {
 	list.m.Lock()
-	list.list.Add(address)
+	list.list.Add(entry)
 	list.m.Unlock()
 }
 
-func (list *SafeIPList) Concat(newList IPSlice) {
+func (list *SafeIPList) Concat(newList PeerList) {
 	list.m.Lock()
 	list.list.Concat(newList)
 	list.m.Unlock()
 }
 
-func (list *SafeIPList) At(index int) net.IP {
+func (list *SafeIPList) At(index int) *PeerItem {
 	list.m.Lock()
-	address := list.list[index]
+	entry := list.list[index]
 	list.m.Unlock()
-	return address
+	return entry
 }
 
-func (list *SafeIPList) Copy(newList IPSlice) {
+func (list *SafeIPList) Copy(newList PeerList) {
 	list.m.Lock()
 	list.list = newList
 	list.m.Unlock()
@@ -43,9 +42,9 @@ func (list *SafeIPList) Copy(newList IPSlice) {
 
 // Returns a COPY of the underlying IPSlice in the SafeIPList thus
 // it will not change as the SafeIPList is modified
-func (list *SafeIPList) Contents() IPSlice {
+func (list *SafeIPList) Contents() PeerList {
 	list.m.Lock()
-	retVal := make(IPSlice, len(list.list))
+	retVal := make(PeerList, len(list.list))
 	copy(retVal, list.list)
 	list.m.Unlock()
 	return retVal

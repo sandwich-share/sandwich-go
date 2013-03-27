@@ -6,6 +6,7 @@ import(
 	"io/ioutil"
 	"sandwich-go/addresslist"
 	"net"
+	"time"
 )
 
 var AddressList *addresslist.SafeIPList //Thread safe
@@ -29,15 +30,16 @@ func InitializeAddressList() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	iplist := addresslist.FromString(string(data))
-	AddressList = addresslist.New(iplist)
+	ipList := addresslist.Unmarshal(data)
+	AddressList = addresslist.New(ipList)
 	log.Println("Loaded AddressList from file")
 }
 
 //TODO: Make a BootStrap that does something reasonable
 func BootStrap() {
-	iplist := make(addresslist.IPSlice, 1)
-	iplist[0] = net.IPv4(127, 0, 0, 1)
+	iplist := make(addresslist.PeerList, 1)
+	iplist[0] = &addresslist.PeerItem{net.IPv4(127, 0, 0, 1), 0, time.Now()}
 	AddressList = addresslist.New(iplist)
+	log.Println("Created new peerlist")
 }
 

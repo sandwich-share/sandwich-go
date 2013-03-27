@@ -39,9 +39,9 @@ func GetPort(address net.IP) string {
 	return ":" + strconv.Itoa(port)
 }
 
-func Save(list addresslist.IPSlice) {
-	json := list.String()
-	err := ioutil.WriteFile(ConfPath("peerlist"), []byte(json), 0777)
+func Save(list addresslist.PeerList) {
+	json := list.Marshal()
+	err := ioutil.WriteFile(ConfPath("peerlist"), json, 0777)
 	if err != nil {
 		log.Println(err)
 	}
