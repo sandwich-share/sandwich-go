@@ -8,6 +8,7 @@ import(
 	"io/ioutil"
 	"log"
 	"sandwich-go/addresslist"
+	"time"
 )
 
 const SandwichDirName = "sandwich"
@@ -48,5 +49,9 @@ func Save(list addresslist.PeerList) {
 	if err != nil {
 		log.Println(err)
 	}
+}
+
+func MakeLocalPeerItem() *addresslist.PeerItem {
+	return &addresslist.PeerItem{LocalIP, FileIndex.IndexHash(), time.Now()}
 }
 

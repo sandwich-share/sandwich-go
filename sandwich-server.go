@@ -25,6 +25,7 @@ func indexForHandler(w http.ResponseWriter, req *http.Request) {
 func peerListHandler(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Content-Type", "text/json")
 	addressList := AddressList.Contents() //Gets a copy of the underlying IPSlice
+	addressList = append(addressList, MakeLocalPeerItem())
 	log.Println("Copied list")
 	json := addressList.Marshal()
 	writer.Write(json)
@@ -46,6 +47,8 @@ func main() {
 	InitializePaths()
 	InitializeFileIndex()
 	InitializeAddressList()
+
+	go KeepAliveLoop()
 
 	http.HandleFunc("/peerlist/", peerListHandler)
 	http.HandleFunc("/ping/", pingHandler)

@@ -1,6 +1,7 @@
 package main
 
 import(
+	"fmt"
 	"os"
 	"os/user"
 	"path"
@@ -14,8 +15,10 @@ import(
 
 var AddressList *addresslist.SafeIPList //Thread safe
 var FileIndex *fileindex.SafeFileList
+var LocalIP net.IP
 
 func InitializeAddressList() {
+	GetLocalIP()
 	path := ConfPath("peerlist")
 	file, err := os.Open(path)
 
@@ -28,15 +31,24 @@ func InitializeAddressList() {
 		return
 	} else if err != nil {
 		log.Fatal(err)
-	}
+	} else {
 
-	data, err := ioutil.ReadAll(file)
+		data, err := ioutil.ReadAll(file)
+		if err != nil {
+			log.Fatal(err)
+		}
+		ipList := addresslist.Unmarshal(data)
+		AddressList = addresslist.New(ipList)
+		log.Println("Loaded AddressList from file")
+	}
+}
+
+func GetLocalIP() {
+	conn, err := net.Dial("tcp", "google.com:80")
 	if err != nil {
 		log.Fatal(err)
 	}
-	ipList := addresslist.Unmarshal(data)
-	AddressList = addresslist.New(ipList)
-	log.Println("Loaded AddressList from file")
+	LocalIP = net.ParseIP(conn.LocalAddr().String())
 }
 
 func InitializePaths() {
@@ -56,11 +68,16 @@ func InitializeFileIndex() {
 //TODO: Make a BootStrap that does something reasonable
 func BootStrap() {
 	iplist := make(addresslist.PeerList, 1)
-	addrs, err := net.InterfaceAddrs()
+	var rawIP string
+	fmt.Print("Please enter an IP address for bootstrap\n=>")
+	_, err := fmt.Scanln(&rawIP)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		BootStrap()
+		return
 	}
-	iplist[0] = &addresslist.PeerItem{net.ParseIP(addrs[3].String()), FileIndex.IndexHash(), FileIndex.TimeStamp()}
+	addrs := net.ParseIP(rawIP)
+	iplist[0] = &addresslist.PeerItem{addrs, FileIndex.IndexHash(), FileIndex.TimeStamp()}
 	AddressList = addresslist.New(iplist)
 	log.Println("Created new peerlist")
 }

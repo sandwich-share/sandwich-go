@@ -57,6 +57,39 @@ func (list PeerList) Marshal() []byte {
 	return jsonList
 }
 
+func (list PeerList) Len() int {
+	return len(list)
+}
+
+func IPLess(listA, listB net.IP) bool {
+	first := []byte(listA)
+	second := []byte(listB)
+	if len(first) < len(second) {
+		return true
+	} else if len(second) < len(first) {
+		return false
+	} else {
+		for i, elem := range first {
+			if elem < second[i] {
+				return true
+			} else if second[i] < elem {
+				return false
+			}
+		}
+	}
+	return false
+}
+
+func (list PeerList) Less(i, j int) bool {
+	return IPLess(list[i].IP, list[j].IP)
+}
+
+func (list PeerList) Swap(i, j int) {
+	temp := list[i]
+	list[i] = list[j]
+	list[j] = temp
+}
+
 func (list PeerList) Add(item *PeerItem) {
 	list = append(list, item)
 }
@@ -64,5 +97,18 @@ func (list PeerList) Add(item *PeerItem) {
 
 func (list PeerList) Concat(newList PeerList) {
 	list = append(list, newList...)
+}
+
+func (list PeerList) RemoveAt(indexList ...int) {
+	subtract := 0
+	i := 0
+	for j, elem := range list {
+		list[j - subtract] = elem
+		if i < len(indexList) && indexList[i] == j {
+			i++
+			subtract++
+		}
+	}
+	list = list[:len(list) - subtract]
 }
 

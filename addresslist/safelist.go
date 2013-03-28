@@ -34,6 +34,13 @@ func (list *SafeIPList) At(index int) *PeerItem {
 	return entry
 }
 
+func (list *SafeIPList) Len() int {
+	list.m.Lock()
+	retVal := len(list.list)
+	list.m.Unlock()
+	return retVal
+}
+
 func (list *SafeIPList) Copy(newList PeerList) {
 	list.m.Lock()
 	list.list = newList
@@ -48,5 +55,11 @@ func (list *SafeIPList) Contents() PeerList {
 	copy(retVal, list.list)
 	list.m.Unlock()
 	return retVal
+}
+
+func (list *SafeIPList) RemoveAt(index ...int) {
+	list.m.Lock()
+	list.list.RemoveAt(index...)
+	list.m.Unlock()
 }
 
