@@ -31,7 +31,9 @@ func GetFileItem(filePath string, info os.FileInfo) *fileindex.FileItem {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return &fileindex.FileItem{relName, uint64(info.Size()), GetFileChecksum(file)}
+	fileItem := &fileindex.FileItem{relName, uint64(info.Size()), GetFileChecksum(file)}
+	file.Close();
+	return fileItem
 }
 
 func BuildFileList(filePath, dir string) []*fileindex.FileItem {
