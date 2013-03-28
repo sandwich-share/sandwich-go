@@ -61,6 +61,19 @@ func (list *FileList) Copy() *FileList {
 	return newList
 }
 
+func (list *FileList) Remove(newList ...string) {
+	subtract := 0
+	i := 0
+	for j, elem := range list.List {
+		list.List[j - subtract] = elem
+		if i < len(newList) && newList[i] == list.List[j].FileName {
+			i++
+			subtract++
+		}
+	}
+	list.List = list.List[:len(list.List) - subtract]
+}
+
 func (list *FileList) RemoveAt(indexList ...int) {
 	subtract := 0
 	i := 0

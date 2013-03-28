@@ -17,7 +17,7 @@ func pingHandler(w http.ResponseWriter, req *http.Request) {
 
 func indexForHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "text/json")
-	listCopy := FileIndex.Copy()
+	listCopy := FileIndex.Contents()
 	w.Write(listCopy.Marshal())
 	log.Println("Sent index")
 }
@@ -30,7 +30,7 @@ func peerListHandler(writer http.ResponseWriter, request *http.Request) {
 	writer.Write(json)
 }
 
-func logHandler(writer http.ResponseWriter, request *http.Request) {
+func fileHandler(writer http.ResponseWriter, request *http.Request) {
 	var err error
 	query := request.URL.RawQuery
 	split := strings.Split(query, "=")
@@ -50,8 +50,7 @@ func main() {
 	http.HandleFunc("/peerlist/", peerListHandler)
 	http.HandleFunc("/ping/", pingHandler)
 	http.HandleFunc("/indexfor/", indexForHandler)
-	//handler := http.StripPrefix("/file?path=", http.FileServer(http.Dir(SandwichPath)))
-	http.HandleFunc("/file", logHandler)
+	http.HandleFunc("/file", fileHandler)
 
 	log.Printf("About to listen on 8000. Go to http://127.0.0.1:8000/")
 	err := http.ListenAndServe(":8000", nil)

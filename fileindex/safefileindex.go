@@ -34,11 +34,17 @@ func (list *SafeFileList) Concat(newList *FileList) {
 	list.m.Unlock()
 }
 
-func (list *SafeFileList) Copy() *FileList {
+func (list *SafeFileList) Contents() *FileList {
 	list.m.RLock()
 	retVal := list.fileList.Copy()
 	list.m.RUnlock()
 	return retVal
+}
+
+func (list *SafeFileList) Copy(fileList *FileList) {
+	list.m.Lock()
+	list.fileList = fileList
+	list.m.Unlock()
 }
 
 func (list *SafeFileList) TimeStamp() time.Time {
@@ -53,6 +59,12 @@ func (list *SafeFileList) IndexHash() uint32 {
 	retVal := list.fileList.IndexHash
 	list.m.RUnlock()
 	return retVal
+}
+
+func (list *SafeFileList) Remove(itemList ...string) {
+	list.m.Lock()
+	list.fileList.Remove(itemList...)
+	list.m.Unlock()
 }
 
 func (list *SafeFileList) RemoveAt(indexs ...int) {

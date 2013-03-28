@@ -50,6 +50,7 @@ func InitializePaths() {
 
 func InitializeFileIndex() {
 	FileIndex = fileindex.New(directory.BuildFileIndex(SandwichPath))
+	directory.StartWatch(SandwichPath, FileIndex)
 }
 
 //TODO: Make a BootStrap that does something reasonable
