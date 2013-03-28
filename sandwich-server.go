@@ -1,7 +1,11 @@
 package main
 
-import "net/http"
-import "log"
+import(
+	"net/http"
+	"log"
+	"net/url"
+	"strings"
+)
 
 // this will eventually resize, but right now you can't have more than 500 peers.
 var defaultPeerListSize = 500
@@ -26,17 +30,28 @@ func peerListHandler(writer http.ResponseWriter, request *http.Request) {
 	writer.Write(json)
 }
 
+func logHandler(writer http.ResponseWriter, request *http.Request) {
+	var err error
+	query := request.URL.RawQuery
+	split := strings.Split(query, "=")
+	request.URL, err = url.Parse(split[1])
+	if err != nil {
+		log.Fatal(err)
+	}
+	http.FileServer(http.Dir(SandwichPath)).ServeHTTP(writer, request)
+}
+
 func main() {
 
 	InitializePaths()
 	InitializeFileIndex()
 	InitializeAddressList()
 
-	http.HandleFunc("/", indexForHandler)
 	http.HandleFunc("/peerlist/", peerListHandler)
 	http.HandleFunc("/ping/", pingHandler)
 	http.HandleFunc("/indexfor/", indexForHandler)
-	http.Handle("/file?path=", http.StripPrefix("/file?path=", http.FileServer(http.Dir(SandwichPath))))
+	//handler := http.StripPrefix("/file?path=", http.FileServer(http.Dir(SandwichPath)))
+	http.HandleFunc("/file", logHandler)
 
 	log.Printf("About to listen on 8000. Go to http://127.0.0.1:8000/")
 	err := http.ListenAndServe(":8000", nil)
