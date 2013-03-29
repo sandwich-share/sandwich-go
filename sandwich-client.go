@@ -61,6 +61,7 @@ func UpdateAddressList(newList addresslist.PeerList) {
 }
 
 func KeepAliveLoop() {
+	log.Println("KeepAliveLoop has been started")
 	for {
 		if AddressList.Len() == 0 {
 			log.Fatal("AddressList ran out of peers")

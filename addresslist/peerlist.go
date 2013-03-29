@@ -99,16 +99,3 @@ func (list PeerList) Concat(newList PeerList) {
 	list = append(list, newList...)
 }
 
-func (list PeerList) RemoveAt(indexList ...int) {
-	subtract := 0
-	i := 0
-	for j, elem := range list {
-		list[j - subtract] = elem
-		if i < len(indexList) && indexList[i] == j {
-			i++
-			subtract++
-		}
-	}
-	list = list[:len(list) - subtract]
-}
-

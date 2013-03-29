@@ -57,9 +57,18 @@ func (list *SafeIPList) Contents() PeerList {
 	return retVal
 }
 
-func (list *SafeIPList) RemoveAt(index ...int) {
+func (list *SafeIPList) RemoveAt(indexList ...int) {
 	list.m.Lock()
-	list.list.RemoveAt(index...)
+	subtract := 0
+	i := 0
+	for j, elem := range list.list {
+		list.list[j - subtract] = elem
+		if i < len(indexList) && indexList[i] == j {
+			i++
+			subtract++
+		}
+	}
+	list.list = list.list[:len(list.list) - subtract]
 	list.m.Unlock()
 }
 
