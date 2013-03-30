@@ -4,7 +4,7 @@ import(
 	"path"
 	"net"
 	"crypto/md5"
-	"strconv"
+	//"strconv"
 	"io/ioutil"
 	"log"
 	"sandwich-go/addresslist"
@@ -39,8 +39,9 @@ func GetPort(address net.IP) string {
 	if address.Equal(net.IPv4(127, 0, 0, 1)) {
 		return ":8000" //It would be silly to do something funny on your own computer
 	}
-	port := ComputeHash(address)
-	return ":" + strconv.Itoa(port)
+	//port := ComputeHash(address)
+	//return ":" + strconv.Itoa(port)
+	return ":80"
 }
 
 func Save(list addresslist.PeerList) {

@@ -48,7 +48,7 @@ func InitializeServer() {
 	http.HandleFunc("/indexfor/", indexForHandler)
 	http.HandleFunc("/file", fileHandler)
 
-	log.Printf("About to listen on 8000. Go to http://127.0.0.1:8000/")
+	log.Printf("About to listen on %s. Go to http://127.0.0.1:8000/\n", GetPort(LocalIP))
 	if Settings.ListenLocal {
 		go http.ListenAndServe(":8000", nil)
 	}

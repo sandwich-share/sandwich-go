@@ -67,12 +67,15 @@ func UpdateAddressList(newList addresslist.PeerList) {
 func Ping(address net.IP) bool {
 	resp, err := http.Get("http://" + address.String() + "/ping" + GetPort(address))
 	if err != nil {
+		log.Println(err)
 		return false
 	}
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		log.Println(err)
 		return false
 	}
+	log.Println(string(data))
 	return string(data) == "pong\n"
 }
 
