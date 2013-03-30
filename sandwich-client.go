@@ -28,15 +28,10 @@ func Get(address net.IP, extension string) ([]byte, error) {
 
 func GetPeerList(address net.IP) (addresslist.PeerList, error) {
 	resp, err := Get(address ,"peerlist")
-	/*if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Println(err)
 		return nil, err
-	}*/
+	}
 	peerlist := addresslist.Unmarshal(resp)
 	return peerlist, err
 }
