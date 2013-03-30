@@ -99,8 +99,8 @@ func main() {
 
 	InitializePaths()
 	InitializeSettings()
-	InitializeAddressList()
 	InitializeFileIndex()
+	InitializeAddressList()
 	go InitializeKeepAliveLoop()
 	InitializeServer()
 }
