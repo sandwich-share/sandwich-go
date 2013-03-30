@@ -34,7 +34,11 @@ func UpdateAddressList(newList addresslist.PeerList) {
 	i := 0
 	j := 0
 	for i < len(oldList) && j < len(newList) {
-		if addresslist.IPLess(oldList[i].IP, newList[j].IP) {
+		if oldList[i].IP.Equal(LocalIP) {
+			i++
+		} else if newList[j].IP.Equal(LocalIP) {
+			j++
+		} else if addresslist.IPLess(oldList[i].IP, newList[j].IP) {
 			resultList = append(resultList, oldList[i])
 			i++
 		} else if addresslist.IPLess(newList[j].IP, oldList[i].IP) {
@@ -58,6 +62,28 @@ func UpdateAddressList(newList addresslist.PeerList) {
 	}
 	Save(resultList)
 	AddressList.Copy(resultList)
+}
+
+func Ping(address net.IP) bool {
+	resp, err := http.Get("http://" + address.String() + "/ping" + GetPort(address))
+	if err != nil {
+		return false
+	}
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return false
+	}
+	return string(data) == "pong\n"
+}
+
+func InitializeKeepAliveLoop() {
+	if AddressList.Len() == 0 {
+		log.Fatal("AddressList ran out of peers")
+	}
+	if Settings.PingUntilFoundOnStart {
+		for !Ping(AddressList.At(0).IP) {}
+	}
+	KeepAliveLoop()
 }
 
 func KeepAliveLoop() {

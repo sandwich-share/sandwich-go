@@ -11,11 +11,13 @@ import(
 	"net"
 	"sandwich-go/fileindex"
 	"sandwich-go/directory"
+	"sandwich-go/settings"
 )
 
 var AddressList *addresslist.SafeIPList //Thread safe
 var FileIndex *fileindex.SafeFileList
 var LocalIP net.IP
+var Settings *settings.Settings
 
 func InitializeAddressList() {
 	GetLocalIP()
@@ -61,6 +63,16 @@ func InitializePaths() {
 	SandwichPath = path.Join(HomePath, SandwichDirName)
 }
 
+func InitializeSettings() {
+	var err error
+	settings.SettingsPath = ConfPath("settings.xml")
+	Settings, err = settings.Load()
+	if err != nil {
+		Settings = &settings.Settings{}
+		Settings.Save()
+	}
+}
+
 func InitializeFileIndex() {
 	FileIndex = fileindex.New(directory.BuildFileIndex(SandwichPath))
 	directory.StartWatch(SandwichPath, FileIndex)
@@ -81,5 +93,15 @@ func BootStrap() {
 	iplist[0] = &addresslist.PeerItem{addrs, FileIndex.IndexHash(), FileIndex.TimeStamp()}
 	AddressList = addresslist.New(iplist)
 	log.Println("Created new peerlist")
+}
+
+func main() {
+
+	InitializePaths()
+	InitializeSettings()
+	InitializeAddressList()
+	InitializeFileIndex()
+	go InitializeKeepAliveLoop()
+	InitializeServer()
 }
 
