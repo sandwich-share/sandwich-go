@@ -2,18 +2,33 @@ package main
 
 import(
 	"net"
-	"net/http"
 	"log"
 	"io/ioutil"
 	"math/rand"
 	"sort"
 	"time"
 	"sandwich-go/addresslist"
+	"fmt"
 )
 
-func GetPeerList(address net.IP) (addresslist.PeerList, error) {
-	resp, err := http.Get("http://" + address.String() + "/peerlist" + GetPort(address))
+func Get(address net.IP, extension string) ([]byte, error) {
+	conn, err := net.Dial("tcp", address.String() + GetPort(address))
 	if err != nil {
+		return nil, err
+	}
+	fmt.Fprintf(conn, "GET /" + extension + " HTTP/1.1\r\n\r\n")
+	data, err := ioutil.ReadAll(conn)
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Println(string(data))
+	err = conn.Close()
+	return data, err
+}
+
+func GetPeerList(address net.IP) (addresslist.PeerList, error) {
+	resp, err := Get(address ,"peerlist")
+	/*if err != nil {
 		log.Println(err)
 		return nil, err
 	}
@@ -21,8 +36,8 @@ func GetPeerList(address net.IP) (addresslist.PeerList, error) {
 	if err != nil {
 		log.Println(err)
 		return nil, err
-	}
-	peerlist := addresslist.Unmarshal(data)
+	}*/
+	peerlist := addresslist.Unmarshal(resp)
 	return peerlist, err
 }
 
@@ -65,18 +80,12 @@ func UpdateAddressList(newList addresslist.PeerList) {
 }
 
 func Ping(address net.IP) bool {
-	resp, err := http.Get("http://" + address.String() + "/ping" + GetPort(address))
+	resp, err := Get(address, "ping")
 	if err != nil {
 		log.Println(err)
 		return false
 	}
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Println(err)
-		return false
-	}
-	log.Println(string(data))
-	return string(data) == "pong\n"
+	return string(resp) == "pong\n"
 }
 
 func InitializeKeepAliveLoop() {
