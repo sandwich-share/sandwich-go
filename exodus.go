@@ -7,6 +7,7 @@ import(
 	"path"
 	"log"
 	"io/ioutil"
+	"strings"
 	"sandwich-go/addresslist"
 	"net"
 	"sandwich-go/fileindex"
@@ -50,8 +51,8 @@ func GetLocalIP() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("Local IP is: " + conn.LocalAddr().String())
-	LocalIP = net.ParseIP(conn.LocalAddr().String())
+	LocalIP = net.ParseIP(strings.Split(conn.LocalAddr().String(), ":")[0])
+	log.Println("Local IP is: " + LocalIP.String())
 }
 
 func InitializePaths() {
