@@ -8,7 +8,8 @@ import(
 	"sort"
 	"time"
 	"sandwich-go/addresslist"
-	"fmt"
+	"net/http"
+	"bufio"
 )
 
 func Get(address net.IP, extension string) ([]byte, error) {
@@ -16,22 +17,35 @@ func Get(address net.IP, extension string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Fprintf(conn, "GET /" + extension + " HTTP/1.1\r\n\r\n")
-	data, err := ioutil.ReadAll(conn)
+	log.Println("Dialed")
+	request, err := http.NewRequest("GET", extension, nil)
 	if err != nil {
-		log.Println(err)
+		return nil, err
 	}
-	fmt.Println(string(data))
+	err = request.Write(conn)
+	if err != nil {
+		return nil, err
+	}
+	buffer := bufio.NewReader(conn)
+	response, err := http.ReadResponse(buffer, request)
+	if err != nil {
+		return nil, err
+	}
+	data, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
 	err = conn.Close()
 	return data, err
 }
 
 func GetPeerList(address net.IP) (addresslist.PeerList, error) {
-	resp, err := Get(address ,"peerlist")
+	resp, err := Get(address ,"/peerlist/")
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
+	log.Println(string(resp))
 	peerlist := addresslist.Unmarshal(resp)
 	return peerlist, err
 }
@@ -75,12 +89,15 @@ func UpdateAddressList(newList addresslist.PeerList) {
 }
 
 func Ping(address net.IP) bool {
-	resp, err := Get(address, "ping")
+	resp, err := Get(address, "/ping/");
 	if err != nil {
 		log.Println(err)
 		return false
 	}
-	return string(resp) == "pong\n"
+	if string(resp) == "pong\n" {
+		return true
+	}
+	return false
 }
 
 func InitializeKeepAliveLoop() {
