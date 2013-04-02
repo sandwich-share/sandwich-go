@@ -62,49 +62,37 @@ func GetPeerList(address net.IP) (addresslist.PeerList, error) {
 func UpdateAddressList(newList addresslist.PeerList) {
 	oldList := AddressList.Contents()
 	var resultList addresslist.PeerList
+	reduceMap := make(map[string]*addresslist.PeerItem)
 	sort.Sort(oldList)
 	sort.Sort(newList)
-	i := 0
-	j := 0
-	for i < len(oldList) && j < len(newList) {
-		k := len(resultList) - 1
-		if len(resultList) > 0 && resultList[k].IP.Equal(oldList[i].IP) {
-			i++
-		} else if len(resultList) > 0 && resultList[k].IP.Equal(newList[j].IP) {
-			j++
-		} else if oldList[i].IP.Equal(LocalIP) {
-			i++
-		} else if newList[j].IP.Equal(LocalIP) {
-			j++
-		} else if addresslist.IPLess(oldList[i].IP, newList[j].IP) {
-			resultList = append(resultList, oldList[i])
-			i++
-		} else if addresslist.IPLess(newList[j].IP, oldList[i].IP) {
-			resultList = append(resultList, newList[j])
-			j++
-		} else if oldList[i].LastSeen.Before(newList[j].LastSeen) {
-			resultList = append(resultList, newList[j]) //if the IPs match, keep the most recent
-			i++
-			j++
+	for _, elem := range oldList {
+		if elem.IP.Equal(LocalIP) {
+			continue
+		}
+		toReplace, ok := reduceMap[string(elem.IP)]
+		if ok {
+			if toReplace.LastSeen.Before(elem.LastSeen) {
+				reduceMap[string(elem.IP)] = elem
+			}
 		} else {
-			resultList = append(resultList, oldList[i])
-			i++
-			j++
+			reduceMap[string(elem.IP)] = elem
 		}
 	}
-	for ;i < len(oldList); i++ {
-		k := len(resultList) - 1
-		if len(resultList) > 0 && resultList[k].IP.Equal(oldList[i].IP) {
+	for _, elem := range newList {
+		if elem.IP.Equal(LocalIP) {
 			continue
 		}
-		resultList = append(resultList, oldList[i])
+		toReplace, ok := reduceMap[string(elem.IP)]
+		if ok {
+			if toReplace.LastSeen.Before(elem.LastSeen) {
+				reduceMap[string(elem.IP)] = elem
+			}
+		} else {
+			reduceMap[string(elem.IP)] = elem
+		}
 	}
-	for ;j < len(newList); j++ {
-		k := len(resultList) - 1
-		if len(resultList) > 0 && resultList[k].IP.Equal(newList[j].IP) {
-			continue
-		}
-		resultList = append(resultList, newList[j])
+	for _, value := range reduceMap {
+		resultList = append(resultList, value)
 	}
 	Save(resultList)
 	AddressList.Copy(resultList)
