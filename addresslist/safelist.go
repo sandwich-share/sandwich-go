@@ -7,11 +7,11 @@ import(
 // A thread safe wrapper around an IPSlice
 type SafeIPList struct {
 	list PeerList
-	m sync.Mutex
+	m sync.RWMutex
 }
 
 func New(list PeerList) *SafeIPList {
-	var mutex sync.Mutex
+	var mutex sync.RWMutex
 	return &SafeIPList{list, mutex}
 }
 
@@ -28,16 +28,16 @@ func (list *SafeIPList) Concat(newList PeerList) {
 }
 
 func (list *SafeIPList) At(index int) *PeerItem {
-	list.m.Lock()
+	list.m.RLock()
 	entry := list.list[index]
-	list.m.Unlock()
+	list.m.RUnlock()
 	return entry
 }
 
 func (list *SafeIPList) Len() int {
-	list.m.Lock()
+	list.m.RLock()
 	retVal := len(list.list)
-	list.m.Unlock()
+	list.m.RUnlock()
 	return retVal
 }
 
@@ -50,10 +50,10 @@ func (list *SafeIPList) Copy(newList PeerList) {
 // Returns a COPY of the underlying IPSlice in the SafeIPList thus
 // it will not change as the SafeIPList is modified
 func (list *SafeIPList) Contents() PeerList {
-	list.m.Lock()
+	list.m.RLock()
 	retVal := make(PeerList, len(list.list))
 	copy(retVal, list.list)
-	list.m.Unlock()
+	list.m.RUnlock()
 	return retVal
 }
 

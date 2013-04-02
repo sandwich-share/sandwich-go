@@ -49,6 +49,18 @@ func GetFileIndex(address net.IP) (*fileindex.FileList, error) {
 	return fileList, err
 }
 
+//TODO: Should make this multithreaded. Take advantage of the fact that we are pinging addresses
+func BuildFileManifest() {
+	peerList := AddressList.Contents()
+	for _, item := range peerList {
+		fileList, err := GetFileIndex(item.IP)
+		if err != nil {
+			continue
+		}
+		FileManifest.Put(item.IP, fileList)
+	}
+}
+
 func GetPeerList(address net.IP) (addresslist.PeerList, error) {
 	resp, err := Get(address ,"/peerlist/")
 	if err != nil {

@@ -16,7 +16,8 @@ import(
 )
 
 var AddressList *addresslist.SafeIPList //Thread safe
-var FileIndex *fileindex.SafeFileList
+var FileIndex *fileindex.SafeFileList //Thread safe
+var FileManifest fileindex.FileManifest //NOT THREAD SAFE
 var LocalIP net.IP
 var Settings *settings.Settings
 
