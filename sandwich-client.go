@@ -17,7 +17,6 @@ func Get(address net.IP, extension string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Println("Dialed")
 	request, err := http.NewRequest("GET", extension, nil)
 	if err != nil {
 		return nil, err
@@ -45,7 +44,6 @@ func GetPeerList(address net.IP) (addresslist.PeerList, error) {
 		log.Println(err)
 		return nil, err
 	}
-	log.Println(string(resp))
 	peerlist := addresslist.Unmarshal(resp)
 	return peerlist, err
 }
