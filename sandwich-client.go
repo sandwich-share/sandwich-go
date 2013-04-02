@@ -10,6 +10,7 @@ import(
 	"sandwich-go/addresslist"
 	"net/http"
 	"bufio"
+	"sandwich-go/fileindex"
 )
 
 func Get(address net.IP, extension string) ([]byte, error) {
@@ -38,6 +39,16 @@ func Get(address net.IP, extension string) ([]byte, error) {
 	return data, err
 }
 
+func GetFileIndex(address net.IP) (*fileindex.FileList, error) {
+	resp, err := Get(address, "/indexfor/")
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	fileList := fileindex.Unmarshal(resp)
+	return fileList, err
+}
+
 func GetPeerList(address net.IP) (addresslist.PeerList, error) {
 	resp, err := Get(address ,"/peerlist/")
 	if err != nil {
@@ -56,7 +67,12 @@ func UpdateAddressList(newList addresslist.PeerList) {
 	i := 0
 	j := 0
 	for i < len(oldList) && j < len(newList) {
-		if oldList[i].IP.Equal(LocalIP) {
+		k := len(resultList) - 1
+		if len(resultList) > 0 && resultList[k].IP.Equal(oldList[i].IP) {
+			i++
+		} else if len(resultList) > 0 && resultList[k].IP.Equal(newList[j].IP) {
+			j++
+		} else if oldList[i].IP.Equal(LocalIP) {
 			i++
 		} else if newList[j].IP.Equal(LocalIP) {
 			j++
@@ -77,9 +93,17 @@ func UpdateAddressList(newList addresslist.PeerList) {
 		}
 	}
 	for ;i < len(oldList); i++ {
+		k := len(resultList) - 1
+		if len(resultList) > 0 && resultList[k].IP.Equal(oldList[i].IP) {
+			continue
+		}
 		resultList = append(resultList, oldList[i])
 	}
 	for ;j < len(newList); j++ {
+		k := len(resultList) - 1
+		if len(resultList) > 0 && resultList[k].IP.Equal(newList[j].IP) {
+			continue
+		}
 		resultList = append(resultList, newList[j])
 	}
 	Save(resultList)
