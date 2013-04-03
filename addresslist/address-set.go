@@ -16,6 +16,13 @@ func NewAddressSet() (*AddressSet) {
 	return &AddressSet{hashSet, lock}
 }
 
+func (set *AddressSet) Len() int {
+	set.lock.RLock()
+	retVal := len(set.hashSet)
+	set.lock.RUnlock()
+	return retVal
+}
+
 func (set *AddressSet) Contains(address net.IP) bool {
 	set.lock.RLock()
 	_, ok := set.hashSet[address.String()]

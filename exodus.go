@@ -16,6 +16,7 @@ import(
 )
 
 var AddressList *addresslist.SafeIPList //Thread safe
+var AddressSet *addresslist.AddressSet
 var FileIndex *fileindex.SafeFileList //Thread safe
 var FileManifest fileindex.FileManifest //NOT THREAD SAFE
 var LocalIP net.IP
@@ -103,6 +104,7 @@ func BootStrap() {
 
 func main() {
 
+	AddressSet = addresslist.NewAddressSet()
 	InitializePaths()
 	InitializeSettings()
 	InitializeFileIndex()

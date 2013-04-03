@@ -35,6 +35,7 @@ func Get(address net.IP, extension string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	AddressSet.Add(address)
 	err = conn.Close()
 	return data, err
 }
@@ -135,18 +136,27 @@ func InitializeKeepAliveLoop() {
 func KeepAliveLoop() {
 	log.Println("KeepAliveLoop has been started")
 	for {
-		if AddressList.Len() == 0 {
+		var peerList addresslist.PeerList
+		var err error
+		if AddressSet.Len() > 0 {
+			peerList, err = GetPeerList(AddressSet.Pop())
+			if err != nil { //The peer gets deleted from the list if error
+				log.Println(err)
+				continue //shit happens but we do not want a defunct list
+			}
+		} else if AddressList.Len() == 0 {
 			log.Fatal("AddressList ran out of peers")
+		} else {
+			index := rand.Intn(AddressList.Len())
+			entry := AddressList.At(index)
+			peerList, err = GetPeerList(entry.IP)
+			AddressList.RemoveAt(index)
+			if err != nil { //The peer gets deleted from the list if error
+				log.Println(err)
+				continue //shit happens but we do not want a defunct list
+			}
+			AddressList.Add(&addresslist.PeerItem{entry.IP, entry.IndexHash, time.Now()})
 		}
-		index := rand.Intn(AddressList.Len())
-		entry := AddressList.At(index)
-		peerList, err := GetPeerList(entry.IP)
-		AddressList.RemoveAt(index)
-		if err != nil { //The peer gets deleted from the list if error
-			log.Println(err)
-			continue //shit happens but we do not want a defunct list
-		}
-		AddressList.Add(&addresslist.PeerItem{entry.IP, entry.IndexHash, time.Now()})
 		UpdateAddressList(peerList)
 		time.Sleep(2 * time.Second)
 	}
