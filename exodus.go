@@ -110,6 +110,12 @@ func main() {
 	InitializeFileIndex()
 	InitializeAddressList()
 	go InitializeKeepAliveLoop()
+	InitializeUserThread()
+	logWriter, err := os.Create("log")
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.SetOutput(logWriter)
 	InitializeServer()
 }
 

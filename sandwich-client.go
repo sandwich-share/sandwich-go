@@ -10,6 +10,9 @@ import(
 	"sandwich-go/addresslist"
 	"net/http"
 	"bufio"
+	"os"
+	"path"
+	"path/filepath"
 	"sandwich-go/fileindex"
 )
 
@@ -38,6 +41,74 @@ func Get(address net.IP, extension string) ([]byte, error) {
 	AddressSet.Add(address)
 	err = conn.Close()
 	return data, err
+}
+
+func DownloadFile(address net.IP, filePath string) error {
+	conn, err := net.Dial("tcp", address.String() + GetPort(address))
+	if err != nil {
+		conn.Close()
+		return err
+	}
+	request, err := http.NewRequest("GET", "/file?path=" + filePath, nil)
+	if err != nil {
+		conn.Close()
+		return err
+	}
+	err = request.Write(conn)
+	if err != nil {
+		conn.Close()
+		return err
+	}
+	buffer := bufio.NewReader(conn)
+	response, err := http.ReadResponse(buffer, request)
+	if err != nil {
+		conn.Close()
+		return err
+	}
+	buffer = bufio.NewReader(response.Body)
+	dirPath, _ := filepath.Split(filePath)
+	err = os.MkdirAll(path.Join(SandwichPath, dirPath), os.ModePerm)
+	if err != nil {
+		conn.Close()
+		return err
+	}
+	file, err := os.Create(path.Join(SandwichPath, filePath))
+	if err != nil {
+		conn.Close()
+		file.Close()
+		return err
+	}
+	byteBuf := make([]byte, 1024)
+	for done := false; !done; {
+		numRead, err := buffer.Read(byteBuf)
+		if err != nil {
+			conn.Close()
+			file.Close()
+			return err
+		}
+		if numRead == 0 {
+			break
+		} else if numRead < 1024 {
+			byteBuf = byteBuf[:numRead]
+			done = true
+		}
+		_, err = file.Write(byteBuf)
+		if err != nil {
+			conn.Close()
+			file.Close()
+			return err
+		}
+	}
+	err = file.Close()
+	if err != nil {
+		conn.Close()
+		return err
+	}
+	err = conn.Close()
+	if err != nil {
+		return err
+	}
+	return err
 }
 
 func GetFileIndex(address net.IP) (*fileindex.FileList, error) {
