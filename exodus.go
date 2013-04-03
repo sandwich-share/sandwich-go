@@ -53,6 +53,9 @@ func GetLocalIP() {
 		log.Fatal(err)
 	}
 	err = conn.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
 	LocalIP = net.ParseIP(strings.Split(conn.LocalAddr().String(), ":")[0])
 	log.Println("Local IP is: " + LocalIP.String())
 }
