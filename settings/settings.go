@@ -16,6 +16,7 @@ type Settings struct {
 	WriteLogToScreen bool
 	LoopOnEmpty bool
 	DoNotBootStrap bool
+	CheckSumMaxSize int64
 }
 
 func (settings *Settings) Save() {

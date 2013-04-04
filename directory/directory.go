@@ -16,8 +16,17 @@ const ChunkSize = 256*1024
 
 var SandwichPath string
 var watcher *fsnotify.Watcher
+var CheckSumMaxSize int64
 
 func GetFileChecksum(file *os.File) uint32 {
+	fileInfo, err := file.Stat()
+	if err != nil {
+		log.Println(err)
+		return 0
+	}
+	if fileInfo.Size() > CheckSumMaxSize {
+		return 0
+	}
 	hasher := crc32.New(crc32.MakeTable(crc32.Castagnoli))
 	byteBuf := make([]byte, ChunkSize)
 	byteChan := make(chan []byte, ChunkSize)

@@ -111,6 +111,7 @@ func InitializeSettings() {
 
 func InitializeFileIndex() {
 	FileIndex = fileindex.New(nil)
+	directory.CheckSumMaxSize = Settings.CheckSumMaxSize
 	directory.StartWatch(SandwichPath, FileIndex)
 }
 
