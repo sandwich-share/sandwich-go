@@ -49,8 +49,8 @@ func (list *FileList) Add(item *FileItem) {
 	list.List = append(list.List, item)
 }
 
-func (list *FileList) Concat(newList *FileList) {
-	list.List = append(list.List, newList.List...)
+func (list *FileList) Concat(newList []*FileItem) {
+	list.List = append(list.List, newList...)
 }
 
 func (list *FileList) Copy() *FileList {

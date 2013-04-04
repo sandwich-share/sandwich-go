@@ -28,7 +28,7 @@ func (list *SafeFileList) Add(item *FileItem) {
 	list.m.Unlock()
 }
 
-func (list *SafeFileList) Concat(newList *FileList) {
+func (list *SafeFileList) Concat(newList []*FileItem) {
 	list.m.Lock()
 	list.fileList.Concat(newList)
 	list.m.Unlock()

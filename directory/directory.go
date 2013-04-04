@@ -23,14 +23,14 @@ func GetFileChecksum(file *os.File) uint32 {
 }
 
 func GetFileItemName(name string) (*fileindex.FileItem, error) {
-	fullName := path.Join(SandwichPath, name)
-	info, err := os.Stat(fullName)
+	info, err := os.Stat(name)
 	pathErr, ok := err.(*os.PathError)
 	if err != nil && ok && pathErr.Err.Error() == "no such file or directory" {
 		log.Println(err)
 		return nil, err
 	}
-	return GetFileItem(SandwichPath, info)
+	dirPath, _ := filepath.Split(name)
+	return GetFileItem(dirPath, info)
 }
 
 func GetFileItem(filePath string, info os.FileInfo) (*fileindex.FileItem, error) {
@@ -51,6 +51,8 @@ func GetFileItem(filePath string, info os.FileInfo) (*fileindex.FileItem, error)
 }
 
 func BuildFileList(filePath, dir string) []*fileindex.FileItem {
+	log.Println("Now watching: " + path.Join(filePath, dir))
+	watcher.Watch(path.Join(filePath, dir))
 	var fileList []*fileindex.FileItem
 	newPath := path.Join(filePath, dir)
 	infoList, err := ioutil.ReadDir(newPath)
@@ -60,8 +62,6 @@ func BuildFileList(filePath, dir string) []*fileindex.FileItem {
 	for _, fileInfo := range infoList {
 		if fileInfo.IsDir() {
 			fileList = append(fileList, BuildFileList(newPath, fileInfo.Name())...)
-			watcher.Watch(path.Join(newPath, fileInfo.Name()))
-			log.Println("Now watching: " + newPath)
 		} else {
 			fileItem, err := GetFileItem(newPath, fileInfo)
 			pathErr, ok := err.(*os.PathError)
@@ -96,6 +96,7 @@ func StartWatch(dir string, fileIndex *fileindex.SafeFileList) {
 	go func() {
 		for event := range watcher.Event {
 			name, err := filepath.Rel(SandwichPath, event.Name)
+			fullName := path.Join(SandwichPath, name)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -103,13 +104,12 @@ func StartWatch(dir string, fileIndex *fileindex.SafeFileList) {
 			switch {
 			case event.IsCreate():
 				log.Println("Created")
-				info, err := os.Stat(path.Join(SandwichPath, name))
+				info, err := os.Stat(fullName)
 				if err == nil && info.IsDir() {
-					watcher.Watch(path.Join(SandwichPath, name))
-					log.Println("Now watching: " + name)
-					BuildFileList(filepath.Split(path.Join(SandwichPath, name)))
+					fileList := BuildFileList("", fullName)
+					fileIndex.Concat(fileList)
 				} else if err == nil {
-					fileItem, err := GetFileItemName(name)
+					fileItem, err := GetFileItemName(fullName)
 					if err == nil { //Otherwise the file was deleted before we could create it
 						fileIndex.Add(fileItem)
 					}
@@ -120,7 +120,7 @@ func StartWatch(dir string, fileIndex *fileindex.SafeFileList) {
 			case event.IsModify():
 				log.Println("Modified")
 				fileIndex.Remove(name)
-				fileItem, err := GetFileItemName(name)
+				fileItem, err := GetFileItemName(fullName)
 				if err == nil { //Otherwise the file was deleted before we could create it
 					fileIndex.Add(fileItem)
 				}
@@ -133,10 +133,5 @@ func StartWatch(dir string, fileIndex *fileindex.SafeFileList) {
 		log.Println("Watch loop exited")
 		watcher.Close() //This loop should run as long as the program is running
 	}()
-
-	err = watcher.Watch(dir)
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 
