@@ -43,9 +43,8 @@ func Get(address net.IP, extension string) ([]byte, error) {
 }
 
 func DownloadFile(address net.IP, filePath string) error {
-	conn, err := net.DialTimeout("tcp", address.String() + GetPort(address), 2 * time.Second)
+	conn, err := net.DialTimeout("tcp", address.String() + GetPort(address), 10 * time.Second)
 	if err != nil {
-		conn.Close()
 		return err
 	}
 	request, err := http.NewRequest("GET", "/file?path=" + filePath, nil)
@@ -65,6 +64,7 @@ func DownloadFile(address net.IP, filePath string) error {
 		return err
 	}
 	buffer = bufio.NewReader(response.Body)
+	length := response.ContentLength
 	dirPath, _ := filepath.Split(filePath)
 	err = os.MkdirAll(path.Join(SandwichPath, dirPath), os.ModePerm)
 	if err != nil {
@@ -79,17 +79,15 @@ func DownloadFile(address net.IP, filePath string) error {
 	}
 	byteBuf := make([]byte, 1024)
 	for done := false; !done; {
-		numRead, err := buffer.Read(byteBuf)
+		if length < 1024 {
+			byteBuf = byteBuf[:length]
+			done = true
+		}
+		_, err := buffer.Read(byteBuf)
 		if err != nil {
 			conn.Close()
 			file.Close()
 			return err
-		}
-		if numRead == 0 {
-			break
-		} else if numRead < 1024 {
-			byteBuf = byteBuf[:numRead]
-			done = true
 		}
 		_, err = file.Write(byteBuf)
 		if err != nil {
@@ -97,6 +95,7 @@ func DownloadFile(address net.IP, filePath string) error {
 			file.Close()
 			return err
 		}
+		length -= 1024
 	}
 	err = file.Close()
 	if err != nil {
@@ -116,6 +115,7 @@ func GetFileIndex(address net.IP) (*fileindex.FileList, error) {
 		log.Println(err)
 		return nil, err
 	}
+	log.Println(string(resp))
 	fileList := fileindex.Unmarshal(resp)
 	return fileList, err
 }
@@ -129,6 +129,7 @@ func BuildFileManifest() {
 			continue
 		}
 		FileManifest.Put(item.IP, fileList)
+		log.Println("Got index: " + item.IP.String())
 	}
 }
 

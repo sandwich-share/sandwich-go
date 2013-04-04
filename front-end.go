@@ -2,7 +2,6 @@ package main
 
 import(
 	"fmt"
-	"strings"
 	"net"
 	"log"
 )
@@ -24,27 +23,24 @@ func InitializeUserThread() {
 	go func() {
 		for {
 			fmt.Print("=>")
-			var input string
-			_, err := fmt.Scanln(&input)
-			if err != nil {
-				fmt.Println(err)
-			}
-			parsedInput := strings.Split(input, " ")
-			if len(parsedInput) < 1 {
+			input := make([]string, 3)
+			fmt.Scanln(&input[0], &input[1], &input[2])
+			if len(input) < 1 {
 				fmt.Println("Input should be in the form: =>command argument")
 				continue
 			}
-			switch(parsedInput[0]) {
+			switch(input[0]) {
 			case "print":
 				PrintFileManifest()
 			case "update":
 				BuildFileManifest()
 			case "get":
-				if len(parsedInput) != 3 {
+				if len(input) != 3 {
 					fmt.Println("Input should be in the form: =>command argument")
+					fmt.Printf("Length is: %d\n", len(input))
 					continue
 				}
-				err := DownloadFile(net.ParseIP(parsedInput[1]), parsedInput[2])
+				err := DownloadFile(net.ParseIP(input[1]), input[2])
 				if err != nil {
 					fmt.Println(err)
 				}

@@ -25,7 +25,7 @@ func (item *FileItem) Copy() *FileItem {
 }
 
 func Unmarshal(jsonList []byte) *FileList {
-	var fileList *FileList
+	fileList := &FileList{}
 	err := json.Unmarshal(jsonList, fileList)
 	if err != nil {
 		log.Println(err)
