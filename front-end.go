@@ -4,10 +4,15 @@ import(
 	"fmt"
 	"strings"
 	"net"
+	"log"
 )
 
 func PrintFileManifest() {
 	for _, fileList := range FileManifest {
+		if fileList == nil {
+			log.Println("FileList is null")
+			continue
+		}
 		for _, fileItem := range fileList.List {
 			fmt.Println(fileItem.FileName)
 		}

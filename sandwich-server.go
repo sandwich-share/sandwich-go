@@ -1,6 +1,7 @@
 package main
 
 import(
+	"net"
 	"net/http"
 	"log"
 	"net/url"
@@ -13,6 +14,7 @@ var defaultPeerListSize = 500
 func pingHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 	w.Write([]byte("pong\n"))
+	AddressSet.Add(net.ParseIP(strings.Split(req.RemoteAddr, ":")[0]))
 }
 
 func indexForHandler(w http.ResponseWriter, req *http.Request) {
@@ -20,6 +22,7 @@ func indexForHandler(w http.ResponseWriter, req *http.Request) {
 	listCopy := FileIndex.Contents()
 	w.Write(listCopy.Marshal())
 	log.Println("Sent index")
+	AddressSet.Add(net.ParseIP(strings.Split(req.RemoteAddr, ":")[0]))
 }
 
 func peerListHandler(writer http.ResponseWriter, request *http.Request) {
@@ -29,6 +32,7 @@ func peerListHandler(writer http.ResponseWriter, request *http.Request) {
 	log.Println("Copied list")
 	json := addressList.Marshal()
 	writer.Write(json)
+	AddressSet.Add(net.ParseIP(strings.Split(request.RemoteAddr, ":")[0]))
 }
 
 func fileHandler(writer http.ResponseWriter, request *http.Request) {
@@ -40,6 +44,7 @@ func fileHandler(writer http.ResponseWriter, request *http.Request) {
 		log.Fatal(err)
 	}
 	http.FileServer(http.Dir(SandwichPath)).ServeHTTP(writer, request)
+	AddressSet.Add(net.ParseIP(strings.Split(request.RemoteAddr, ":")[0]))
 }
 
 func InitializeServer() {

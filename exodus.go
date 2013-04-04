@@ -16,7 +16,7 @@ import(
 )
 
 var AddressList *addresslist.SafeIPList //Thread safe
-var AddressSet *addresslist.AddressSet
+var AddressSet *addresslist.AddressSet //Thread safe
 var FileIndex *fileindex.SafeFileList //Thread safe
 var FileManifest fileindex.FileManifest //NOT THREAD SAFE
 var LocalIP net.IP
@@ -81,7 +81,7 @@ func InitializeSettings() {
 }
 
 func InitializeFileIndex() {
-	FileIndex = fileindex.New(directory.BuildFileIndex(SandwichPath))
+	FileIndex = fileindex.New(nil)
 	directory.StartWatch(SandwichPath, FileIndex)
 }
 
@@ -105,17 +105,22 @@ func BootStrap() {
 func main() {
 
 	AddressSet = addresslist.NewAddressSet()
+	FileManifest = fileindex.NewFileManifest()
 	InitializePaths()
 	InitializeSettings()
 	InitializeFileIndex()
 	InitializeAddressList()
 	go InitializeKeepAliveLoop()
-	InitializeUserThread()
-	logWriter, err := os.Create("log")
-	if err != nil {
-		log.Fatal(err)
+	if !Settings.DisableInterface {
+		InitializeUserThread()
 	}
-	log.SetOutput(logWriter)
+	if !Settings.WriteLogToScreen {
+		logWriter, err := os.Create("log")
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.SetOutput(logWriter)
+	}
 	InitializeServer()
 }
 

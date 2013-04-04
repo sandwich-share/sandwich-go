@@ -17,7 +17,7 @@ import(
 )
 
 func Get(address net.IP, extension string) ([]byte, error) {
-	conn, err := net.Dial("tcp", address.String() + GetPort(address))
+	conn, err := net.DialTimeout("tcp", address.String() + GetPort(address), 2 * time.Second)
 	if err != nil {
 		return nil, err
 	}
@@ -38,13 +38,12 @@ func Get(address net.IP, extension string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	AddressSet.Add(address)
 	err = conn.Close()
 	return data, err
 }
 
 func DownloadFile(address net.IP, filePath string) error {
-	conn, err := net.Dial("tcp", address.String() + GetPort(address))
+	conn, err := net.DialTimeout("tcp", address.String() + GetPort(address), 2 * time.Second)
 	if err != nil {
 		conn.Close()
 		return err
@@ -216,6 +215,10 @@ func KeepAliveLoop() {
 				continue //shit happens but we do not want a defunct list
 			}
 		} else if AddressList.Len() == 0 {
+			if Settings.LoopOnEmpty {
+				time.Sleep(5 * time.Second)
+				continue
+			}
 			log.Fatal("AddressList ran out of peers")
 		} else {
 			index := rand.Intn(AddressList.Len())
