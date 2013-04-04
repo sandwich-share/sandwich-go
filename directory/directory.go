@@ -62,19 +62,25 @@ func GetFileItemName(name string) (*fileindex.FileItem, error) {
 }
 
 func GetFileItem(filePath string, info os.FileInfo) (*fileindex.FileItem, error) {
+	var checksum uint32
 	fullName := path.Join(filePath, info.Name())
-	file, err := os.Open(fullName)
-	pathErr, ok := err.(*os.PathError)
-	if err != nil && ok && pathErr.Err.Error() == "no such file or directory" {
-		log.Println(err)
-		return nil, err
+	if CheckSumMaxSize <= info.Size() {
+		file, err := os.Open(fullName)
+		pathErr, ok := err.(*os.PathError)
+		if err != nil && ok && pathErr.Err.Error() == "no such file or directory" {
+			log.Println(err)
+			return nil, err
+		}
+		checksum = GetFileChecksum(file)
+		file.Close();
+	} else {
+		checksum = 0
 	}
 	relName, err := filepath.Rel(SandwichPath, fullName)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fileItem := &fileindex.FileItem{relName, uint64(info.Size()), GetFileChecksum(file)}
-	file.Close();
+	fileItem := &fileindex.FileItem{relName, uint64(info.Size()), checksum}
 	return fileItem, err
 }
 

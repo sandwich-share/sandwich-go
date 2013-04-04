@@ -105,8 +105,8 @@ func InitializeSettings() {
 	Settings, err = settings.Load()
 	if err != nil {
 		Settings = &settings.Settings{}
-		Settings.Save()
 	}
+	Settings.Save()
 }
 
 func InitializeFileIndex() {
