@@ -79,7 +79,7 @@ func GetFileItem(filePath string, info os.FileInfo) (*fileindex.FileItem, error)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fileItem := &fileindex.FileItem{relName, uint64(info.Size()), checksum}
+	fileItem := &fileindex.FileItem{filepath.ToSlash(relName), uint64(info.Size()), checksum}
 	return fileItem, err
 }
 
