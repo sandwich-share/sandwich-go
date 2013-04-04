@@ -28,12 +28,17 @@ func InitializeAddressList() {
 	file, err := os.Open(path)
 
 	pathErr, ok := err.(*os.PathError)
-	if err != nil && ok && pathErr.Err.Error() == "no such file or directory" { //Yeah, this is pretty bad but the library 
+	if err != nil && ok && pathErr.Err.Error() == "no such file or directory" && !Settings.DoNotBootStrap {
+		//Yeah, this is pretty bad but the library 
 		// did not expose a constant to represent this
 
 		log.Println(err)
 		BootStrap() //This bootstraps us into the network
 		return
+	} else if err != nil && ok && pathErr.Err.Error() == "no such file or directory" {
+		var ipList addresslist.PeerList
+		AddressList = addresslist.New(ipList)
+		log.Println("Created empty AddressList")
 	} else if err != nil {
 		log.Fatal(err)
 	} else {

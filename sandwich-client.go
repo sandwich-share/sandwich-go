@@ -194,7 +194,7 @@ func Ping(address net.IP) bool {
 }
 
 func InitializeKeepAliveLoop() {
-	if AddressList.Len() == 0 {
+	if AddressList.Len() == 0 && !Settings.LoopOnEmpty {
 		log.Fatal("AddressList ran out of peers")
 	}
 	if Settings.PingUntilFoundOnStart {

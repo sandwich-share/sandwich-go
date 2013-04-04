@@ -15,6 +15,7 @@ type Settings struct {
 	DisableInterface bool
 	WriteLogToScreen bool
 	LoopOnEmpty bool
+	DoNotBootStrap bool
 }
 
 func (settings *Settings) Save() {
