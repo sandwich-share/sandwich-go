@@ -24,7 +24,7 @@ func GetFileChecksum(file *os.File) uint32 {
 		log.Println(err)
 		return 0
 	}
-	if fileInfo.Size() > CheckSumMaxSize {
+	if fileInfo.Size() > CheckSumMaxSize && CheckSumMaxSize != -1 {
 		return 0
 	}
 	hasher := crc32.New(crc32.MakeTable(crc32.Castagnoli))
@@ -64,7 +64,7 @@ func GetFileItemName(name string) (*fileindex.FileItem, error) {
 func GetFileItem(filePath string, info os.FileInfo) (*fileindex.FileItem, error) {
 	var checksum uint32
 	fullName := path.Join(filePath, info.Name())
-	if CheckSumMaxSize <= info.Size() {
+	if CheckSumMaxSize <= info.Size() && CheckSumMaxSize != 0 {
 		file, err := os.Open(fullName)
 		pathErr, ok := err.(*os.PathError)
 		if err != nil && ok && pathErr.Err.Error() == "no such file or directory" {
