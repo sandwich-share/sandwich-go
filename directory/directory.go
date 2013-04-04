@@ -51,8 +51,8 @@ func GetFileChecksum(file *os.File) uint32 {
 
 func GetFileItemName(name string) (*fileindex.FileItem, error) {
 	info, err := os.Stat(name)
-	pathErr, ok := err.(*os.PathError)
-	if err != nil && ok && pathErr.Err.Error() == "no such file or directory" {
+	_, ok := err.(*os.PathError)
+	if err != nil && ok {
 		log.Println(err)
 		return nil, err
 	}
@@ -65,8 +65,8 @@ func GetFileItem(filePath string, info os.FileInfo) (*fileindex.FileItem, error)
 	fullName := filepath.Join(filePath, info.Name())
 	if CheckSumMaxSize <= info.Size() && CheckSumMaxSize != 0 {
 		file, err := os.Open(fullName)
-		pathErr, ok := err.(*os.PathError)
-		if err != nil && ok && pathErr.Err.Error() == "no such file or directory" {
+		_, ok := err.(*os.PathError)
+		if err != nil && ok {
 			log.Println(err)
 			return nil, err
 		}
@@ -97,8 +97,8 @@ func BuildFileList(filePath, dir string) []*fileindex.FileItem {
 			fileList = append(fileList, BuildFileList(newPath, fileInfo.Name())...)
 		} else {
 			fileItem, err := GetFileItem(newPath, fileInfo)
-			pathErr, ok := err.(*os.PathError)
-			if err != nil && ok && pathErr.Err.Error() == "no such file or directory" {
+			_, ok := err.(*os.PathError)
+			if err != nil && ok {
 				log.Println(err)
 				continue
 			}

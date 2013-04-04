@@ -76,8 +76,8 @@ func InitializePaths() {
 	SandwichPath = filepath.Join(HomePath, SandwichDirName)
 	ConfigPath = ConfigDirName
 	_, err = os.Stat(SandwichPath)
-	pathErr, ok := err.(*os.PathError)
-	if err != nil && ok && pathErr.Err.Error() == "no such file or directory" {
+	_, ok := err.(*os.PathError)
+	if err != nil && ok {
 		err = os.MkdirAll(SandwichPath, os.ModePerm)
 		if err != nil {
 			log.Fatal(err)
@@ -87,8 +87,8 @@ func InitializePaths() {
 		log.Fatal(err)
 	}
 	_, err = os.Stat(ConfigPath)
-	pathErr, ok = err.(*os.PathError)
-	if err != nil && ok && pathErr.Err.Error() == "no such file or directory" {
+	_, ok = err.(*os.PathError)
+	if err != nil && ok {
 		err = os.MkdirAll(ConfigPath, os.ModePerm)
 		if err != nil {
 			log.Fatal(err)
@@ -108,18 +108,18 @@ func InitializeSettings() {
 	}
 	Settings.Save()
 	if Settings.SandwichDirName != "" {
-		SandwichPath = filepath.Join(HomePath, Settings.SandwichDirName)
-	}
-	_, err = os.Stat(SandwichPath)
-	pathErr, ok := err.(*os.PathError)
-	if err != nil && ok && pathErr.Err.Error() == "no such file or directory" {
-		err = os.MkdirAll(SandwichPath, os.ModePerm)
-		if err != nil {
+		SandwichPath = Settings.SandwichDirName
+		_, err = os.Stat(SandwichPath)
+		_, ok := err.(*os.PathError)
+		if err != nil && ok {
+			err = os.MkdirAll(SandwichPath, os.ModePerm)
+			if err != nil {
+				log.Fatal(err)
+			}
+			log.Println("Created: " + SandwichPath)
+		} else if err != nil {
 			log.Fatal(err)
 		}
-		log.Println("Created: " + SandwichPath)
-	} else if err != nil {
-		log.Fatal(err)
 	}
 }
 
