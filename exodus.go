@@ -74,6 +74,29 @@ func InitializePaths() {
 	}
 	HomePath = usr.HomeDir
 	SandwichPath = path.Join(HomePath, SandwichDirName)
+	ConfigPath = ConfigDirName
+	_, err = os.Stat(SandwichPath)
+	pathErr, ok := err.(*os.PathError)
+	if err != nil && ok && pathErr.Err.Error() == "no such file or directory" {
+		err = os.MkdirAll(SandwichPath, os.ModePerm)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println("Created: " + SandwichPath)
+	} else if err != nil {
+		log.Fatal(err)
+	}
+	_, err = os.Stat(ConfigPath)
+	pathErr, ok = err.(*os.PathError)
+	if err != nil && ok && pathErr.Err.Error() == "no such file or directory" {
+		err = os.MkdirAll(ConfigPath, os.ModePerm)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println("Created: " + ConfigPath)
+	} else if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func InitializeSettings() {

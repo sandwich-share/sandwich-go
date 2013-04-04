@@ -16,10 +16,11 @@ const ConfigDirName = "conf"
 
 var HomePath string
 var SandwichPath string
+var ConfigPath string
 
 // Quick way to make a path for a config file
 func ConfPath(newPath string) string {
-	return path.Join(ConfigDirName, newPath)
+	return path.Join(ConfigPath, newPath)
 }
 
 func ComputeHash(address net.IP) int {
