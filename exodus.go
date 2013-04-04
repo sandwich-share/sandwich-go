@@ -4,7 +4,7 @@ import(
 	"fmt"
 	"os"
 	"os/user"
-	"path"
+	"path/filepath"
 	"log"
 	"io/ioutil"
 	"strings"
@@ -73,7 +73,7 @@ func InitializePaths() {
 		log.Fatal(err)
 	}
 	HomePath = usr.HomeDir
-	SandwichPath = path.Join(HomePath, SandwichDirName)
+	SandwichPath = filepath.Join(HomePath, SandwichDirName)
 	ConfigPath = ConfigDirName
 	_, err = os.Stat(SandwichPath)
 	pathErr, ok := err.(*os.PathError)
@@ -107,6 +107,20 @@ func InitializeSettings() {
 		Settings = &settings.Settings{}
 	}
 	Settings.Save()
+	if Settings.SandwichDirName != "" {
+		SandwichPath = filepath.Join(HomePath, Settings.SandwichDirName)
+	}
+	_, err = os.Stat(SandwichPath)
+	pathErr, ok := err.(*os.PathError)
+	if err != nil && ok && pathErr.Err.Error() == "no such file or directory" {
+		err = os.MkdirAll(SandwichPath, os.ModePerm)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println("Created: " + SandwichPath)
+	} else if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func InitializeFileIndex() {

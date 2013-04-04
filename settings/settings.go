@@ -17,6 +17,7 @@ type Settings struct {
 	LoopOnEmpty bool
 	DoNotBootStrap bool
 	CheckSumMaxSize int64
+	SandwichDirName string
 }
 
 func (settings *Settings) Save() {

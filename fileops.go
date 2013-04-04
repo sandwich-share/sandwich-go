@@ -1,7 +1,7 @@
 package main
 
 import(
-	"path"
+	"path/filepath"
 	"net"
 	"crypto/md5"
 	"strconv"
@@ -20,7 +20,7 @@ var ConfigPath string
 
 // Quick way to make a path for a config file
 func ConfPath(newPath string) string {
-	return path.Join(ConfigPath, newPath)
+	return filepath.Join(ConfigPath, newPath)
 }
 
 func ComputeHash(address net.IP) int {

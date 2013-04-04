@@ -6,7 +6,6 @@ import(
 	"io/ioutil"
 	"hash/crc32"
 	"os"
-	"path"
 	"path/filepath"
 	"sandwich-go/fileindex"
 	"code.google.com/p/go.exp/fsnotify"
@@ -63,7 +62,7 @@ func GetFileItemName(name string) (*fileindex.FileItem, error) {
 
 func GetFileItem(filePath string, info os.FileInfo) (*fileindex.FileItem, error) {
 	var checksum uint32
-	fullName := path.Join(filePath, info.Name())
+	fullName := filepath.Join(filePath, info.Name())
 	if CheckSumMaxSize <= info.Size() && CheckSumMaxSize != 0 {
 		file, err := os.Open(fullName)
 		pathErr, ok := err.(*os.PathError)
@@ -85,10 +84,10 @@ func GetFileItem(filePath string, info os.FileInfo) (*fileindex.FileItem, error)
 }
 
 func BuildFileList(filePath, dir string) []*fileindex.FileItem {
-	log.Println("Now watching: " + path.Join(filePath, dir))
-	watcher.Watch(path.Join(filePath, dir))
+	log.Println("Now watching: " + filepath.Join(filePath, dir))
+	watcher.Watch(filepath.Join(filePath, dir))
 	var fileList []*fileindex.FileItem
-	newPath := path.Join(filePath, dir)
+	newPath := filepath.Join(filePath, dir)
 	infoList, err := ioutil.ReadDir(newPath)
 	if err != nil {
 		log.Fatal(err)
@@ -130,7 +129,7 @@ func StartWatch(dir string, fileIndex *fileindex.SafeFileList) {
 	go func() {
 		for event := range watcher.Event {
 			name, err := filepath.Rel(SandwichPath, event.Name)
-			fullName := path.Join(SandwichPath, name)
+			fullName := filepath.Join(SandwichPath, name)
 			if err != nil {
 				log.Fatal(err)
 			}
