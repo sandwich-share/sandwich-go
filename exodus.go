@@ -13,6 +13,7 @@ import(
 	"sandwich-go/fileindex"
 	"sandwich-go/directory"
 	"sandwich-go/settings"
+	"runtime"
 )
 
 var AddressList *addresslist.SafeIPList //Thread safe
@@ -108,6 +109,8 @@ func BootStrap() {
 }
 
 func main() {
+
+	runtime.GOMAXPROCS(2)
 
 	AddressSet = addresslist.NewAddressSet()
 	FileManifest = fileindex.NewFileManifest()

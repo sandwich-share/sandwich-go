@@ -2,6 +2,7 @@ package directory
 
 import(
 	"log"
+	"io"
 	"io/ioutil"
 	"hash/crc32"
 	"os"
@@ -11,15 +12,33 @@ import(
 	"code.google.com/p/go.exp/fsnotify"
 )
 
+const ChunkSize = 256*1024
+
 var SandwichPath string
 var watcher *fsnotify.Watcher
 
 func GetFileChecksum(file *os.File) uint32 {
-	data, err := ioutil.ReadAll(file)
-	if err != nil {
-		log.Fatal(err)
+	hasher := crc32.New(crc32.MakeTable(crc32.Castagnoli))
+	byteBuf := make([]byte, ChunkSize)
+	byteChan := make(chan []byte, ChunkSize)
+	go func() {
+		for val := range byteChan {
+			hasher.Write(val)
+		}
+	}()
+	for done := false; !done; {
+		numRead, err := file.Read(byteBuf)
+		if err != nil && err != io.EOF {
+			log.Println(err)
+		}
+		if numRead < ChunkSize {
+			byteBuf = byteBuf[:numRead]
+			done = true
+		}
+		byteChan <- byteBuf
 	}
-	return crc32.ChecksumIEEE(data)
+	close(byteChan)
+	return hasher.Sum32()
 }
 
 func GetFileItemName(name string) (*fileindex.FileItem, error) {
