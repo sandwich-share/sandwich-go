@@ -44,12 +44,14 @@ func GetPort(address net.IP) string {
 	return ":" + strconv.Itoa(port)
 }
 
-func Save(list addresslist.PeerList) {
+func Save(list addresslist.PeerList) error {
 	json := list.Marshal()
 	err := ioutil.WriteFile(ConfPath("peerlist"), json, 0777)
 	if err != nil {
 		log.Println(err)
+		return err
 	}
+	return nil
 }
 
 func MakeLocalPeerItem() *addresslist.PeerItem {

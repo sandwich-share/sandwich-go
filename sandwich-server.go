@@ -35,19 +35,21 @@ func peerListHandler(writer http.ResponseWriter, request *http.Request) {
 	AddressSet.Add(net.ParseIP(strings.Split(request.RemoteAddr, ":")[0]))
 }
 
-func fileHandler(writer http.ResponseWriter, request *http.Request) {
+func fileHandler(writer http.ResponseWriter, request *http.Request) error {
 	var err error
 	query := request.URL.RawQuery
 	split := strings.Split(query, "=")
 	request.URL, err = url.Parse(split[1])
 	if err != nil {
 		log.Fatal(err)
+		return err
 	}
 	http.FileServer(http.Dir(SandwichPath)).ServeHTTP(writer, request)
 	AddressSet.Add(net.ParseIP(strings.Split(request.RemoteAddr, ":")[0]))
+	return nil
 }
 
-func InitializeServer() {
+func InitializeServer() error {
 	http.HandleFunc("/peerlist/", peerListHandler)
 	http.HandleFunc("/ping/", pingHandler)
 	http.HandleFunc("/indexfor/", indexForHandler)
@@ -60,6 +62,8 @@ func InitializeServer() {
 	err := http.ListenAndServe(GetPort(LocalIP), nil)
 	if err != nil {
 		log.Fatal(err)
+		return err
 	}
+	return nil
 }
 

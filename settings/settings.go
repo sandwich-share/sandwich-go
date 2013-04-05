@@ -20,14 +20,16 @@ type Settings struct {
 	SandwichDirName string
 }
 
-func (settings *Settings) Save() {
+func (settings *Settings) Save() error {
 	data, err := xml.MarshalIndent(settings, "", "  ")
 	if err != nil {
 		log.Println(err)
+		return err
 	}
 	err = ioutil.WriteFile(SettingsPath, data, os.ModePerm)
 	if err != nil {
 		log.Println(err)
+		return err
 	}
 }
 
