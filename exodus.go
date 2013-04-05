@@ -28,22 +28,17 @@ func InitializeAddressList() {
 	path := ConfPath("peerlist")
 	file, err := os.Open(path)
 
-	pathErr, ok := err.(*os.PathError)
-	if err != nil && ok && pathErr.Err.Error() == "no such file or directory" && !Settings.DoNotBootStrap {
-		//Yeah, this is pretty bad but the library 
-		// did not expose a constant to represent this
-
-		log.Println(err)
-		BootStrap() //This bootstraps us into the network
-		return
-	} else if err != nil && ok && pathErr.Err.Error() == "no such file or directory" {
-		var ipList addresslist.PeerList
-		AddressList = addresslist.New(ipList)
-		log.Println("Created empty AddressList")
+	if err != nil && os.IsNotExist(err) {
+		if !Settings.DoNotBootStrap {
+			BootStrap() //This bootstraps us into the network
+		} else {
+			var ipList addresslist.PeerList
+			AddressList = addresslist.New(ipList)
+			log.Println("Created empty AddressList")
+		}
 	} else if err != nil {
 		log.Fatal(err)
 	} else {
-
 		data, err := ioutil.ReadAll(file)
 		if err != nil {
 			log.Fatal(err)
@@ -76,8 +71,7 @@ func InitializePaths() {
 	SandwichPath = filepath.Join(HomePath, SandwichDirName)
 	ConfigPath = ConfigDirName
 	_, err = os.Stat(SandwichPath)
-	_, ok := err.(*os.PathError)
-	if err != nil && ok {
+	if err != nil && os.IsNotExist(err) {
 		err = os.MkdirAll(SandwichPath, os.ModePerm)
 		if err != nil {
 			log.Fatal(err)
@@ -87,8 +81,7 @@ func InitializePaths() {
 		log.Fatal(err)
 	}
 	_, err = os.Stat(ConfigPath)
-	_, ok = err.(*os.PathError)
-	if err != nil && ok {
+	if err != nil && os.IsNotExist(err) {
 		err = os.MkdirAll(ConfigPath, os.ModePerm)
 		if err != nil {
 			log.Fatal(err)
@@ -110,8 +103,7 @@ func InitializeSettings() {
 	if Settings.SandwichDirName != "" {
 		SandwichPath = Settings.SandwichDirName
 		_, err = os.Stat(SandwichPath)
-		_, ok := err.(*os.PathError)
-		if err != nil && ok {
+		if err != nil && os.IsNotExist(err) {
 			err = os.MkdirAll(SandwichPath, os.ModePerm)
 			if err != nil {
 				log.Fatal(err)
