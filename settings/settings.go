@@ -31,6 +31,7 @@ func (settings *Settings) Save() error {
 		log.Println(err)
 		return err
 	}
+	return nil
 }
 
 func Load() (*Settings, error) {
