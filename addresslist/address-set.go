@@ -64,8 +64,14 @@ func (set *AddressSet)  Delete(address net.IP) {
 }
 
 func (set *AddressSet) Pop() net.IP {
-	retVal := set.Get()
-	set.Delete(retVal)
+	set.lock.Lock()
+	var retVal net.IP
+	for _, value := range set.hashSet {
+		retVal = value
+		delete(set.hashSet, retVal.String())
+		break
+	}
+	set.lock.Unlock()
 	return retVal
 }
 
