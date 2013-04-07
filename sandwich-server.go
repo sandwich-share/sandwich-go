@@ -6,6 +6,8 @@ import(
 	"log"
 	"net/url"
 	"strings"
+	"io"
+	"compress/gzip"
 )
 
 // this will eventually resize, but right now you can't have more than 500 peers.
@@ -48,10 +50,37 @@ func fileHandler(writer http.ResponseWriter, request *http.Request) {
 	AddressSet.Add(net.ParseIP(strings.Split(request.RemoteAddr, ":")[0]))
 }
 
+type gzipResponseWriter struct {
+	io.Writer
+	http.ResponseWriter
+}
+
+func (w gzipResponseWriter) Write(b []byte) (int, error) {
+	return w.Writer.Write(b)
+}
+
+func makeGzipHandler(fn http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+			fn(w, r)
+			return
+		} else {
+			w.Header().Set("Content-Encoding", "gzip")
+			gz, err := gzip.NewWriterLevel(w, gzip.DefaultCompression)
+			if err != nil {
+				http.Error(w, "", http.StatusInternalServerError)
+				return
+			}
+			defer gz.Close()
+			fn(gzipResponseWriter{Writer: gz, ResponseWriter: w}, r)
+		}
+	}
+}
+
 func InitializeServer() error {
-	http.HandleFunc("/peerlist/", peerListHandler)
+	http.HandleFunc("/peerlist/", makeGzipHandler(peerListHandler))
 	http.HandleFunc("/ping/", pingHandler)
-	http.HandleFunc("/indexfor/", indexForHandler)
+	http.HandleFunc("/indexfor/", makeGzipHandler(indexForHandler))
 	http.HandleFunc("/file", fileHandler)
 
 	log.Printf("About to listen on %s.\n", GetPort(LocalIP))
