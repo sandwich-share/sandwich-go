@@ -162,6 +162,12 @@ func BootStrap() error {
 	return nil
 }
 
+func Shutdown() {
+	ioutil.WriteFile(ConfPath("peerlist"), AddressList.Contents().Marshal(), os.ModePerm)
+	Settings.Save()
+	os.Exit(0)
+}
+
 func main() {
 
 	runtime.GOMAXPROCS(2)

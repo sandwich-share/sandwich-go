@@ -127,6 +127,8 @@ func InitializeUserThread() {
 				if err != nil {
 					fmt.Println(err)
 				}
+			case "exit":
+				Shutdown()
 			default:
 				fmt.Println("Input should be in the form: =>command args")
 			}
