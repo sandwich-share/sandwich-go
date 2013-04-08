@@ -16,6 +16,8 @@ import(
 	"path/filepath"
 	"sandwich-go/fileindex"
 	"compress/gzip"
+	"net/url"
+	"fmt"
 )
 
 func Get(address net.IP, extension string) ([]byte, error) {
@@ -61,11 +63,16 @@ func DownloadFile(address net.IP, filePath string) error {
 	if err != nil {
 		return err
 	}
-	request, err := http.NewRequest("GET", "/file?path=" + filePath, nil)
+	fmt.Println(address.String() + GetPort(address))
+
+	url := url.URL{}
+	url.Path = filePath
+	request, err := http.NewRequest("GET", "/file?path=" + url.String(), nil)
 	if err != nil {
 		conn.Close()
 		return err
 	}
+
 	err = request.Write(conn)
 	if err != nil {
 		conn.Close()
