@@ -3,6 +3,7 @@ package main
 import(
 	"net"
 	"log"
+	"io"
 	"io/ioutil"
 	"math/rand"
 	"sort"
@@ -14,6 +15,7 @@ import(
 	"path"
 	"path/filepath"
 	"sandwich-go/fileindex"
+	"compress/gzip"
 )
 
 func Get(address net.IP, extension string) ([]byte, error) {
@@ -25,6 +27,9 @@ func Get(address net.IP, extension string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	request.Header = map[string][]string{
+		"Accept-Encoding": {"gzip, deflate"},
+	}
 	err = request.Write(conn)
 	if err != nil {
 		return nil, err
@@ -34,7 +39,16 @@ func Get(address net.IP, extension string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	data, err := ioutil.ReadAll(response.Body)
+	var data []byte
+	if response.Header.Get("Accept-Encoding") == "gzip, deflate" {
+		unzipper, err := gzip.NewReader(response.Body)
+		if err != nil {
+			return nil, err
+		}
+		data, err = ioutil.ReadAll(unzipper)
+	} else {
+		data, err = ioutil.ReadAll(response.Body)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +78,6 @@ func DownloadFile(address net.IP, filePath string) error {
 		return err
 	}
 	buffer = bufio.NewReader(response.Body)
-	length := response.ContentLength
 	dirPath, _ := filepath.Split(filePath)
 	err = os.MkdirAll(path.Join(SandwichPath, dirPath), os.ModePerm)
 	if err != nil {
@@ -79,23 +92,20 @@ func DownloadFile(address net.IP, filePath string) error {
 	}
 	byteBuf := make([]byte, 1024)
 	for done := false; !done; {
-		if length < 1024 {
-			byteBuf = byteBuf[:length]
+		numRead, err := buffer.Read(byteBuf)
+		if err == io.EOF {
 			done = true
+		} else if err != nil {
+			conn.Close()
+			file.Close()
+			return err
 		}
-		_, err := buffer.Read(byteBuf)
+		_, err = file.Write(byteBuf[:numRead])
 		if err != nil {
 			conn.Close()
 			file.Close()
 			return err
 		}
-		_, err = file.Write(byteBuf)
-		if err != nil {
-			conn.Close()
-			file.Close()
-			return err
-		}
-		length -= 1024
 	}
 	err = file.Close()
 	if err != nil {
@@ -115,7 +125,6 @@ func GetFileIndex(address net.IP) (*fileindex.FileList, error) {
 		log.Println(err)
 		return nil, err
 	}
-	log.Println(string(resp))
 	fileList := fileindex.Unmarshal(resp)
 	return fileList, err
 }
