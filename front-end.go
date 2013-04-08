@@ -7,13 +7,13 @@ import(
 )
 
 func PrintFileManifest() {
-	for _, fileList := range FileManifest {
+	for ip, fileList := range FileManifest {
 		if fileList == nil {
 			log.Println("FileList is null")
 			continue
 		}
 		for _, fileItem := range fileList.List {
-			fmt.Println(fileItem.FileName)
+			fmt.Println(ip + ":" + fileItem.FileName)
 		}
 	}
 }

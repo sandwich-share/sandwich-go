@@ -65,6 +65,7 @@ func DownloadFile(address net.IP, filePath string) error {
 	}
 	buffer = bufio.NewReader(response.Body)
 	length := response.ContentLength
+	log.Println(response.TransferEncoding)
 	dirPath, _ := filepath.Split(filePath)
 	err = os.MkdirAll(path.Join(SandwichPath, dirPath), os.ModePerm)
 	if err != nil {
