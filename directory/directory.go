@@ -6,6 +6,9 @@ import(
 	"io/ioutil"
 	"hash/crc32"
 	"os"
+	"time"
+	"sync"
+	"sync/atomic"
 	"path/filepath"
 	"sandwich-go/fileindex"
 	"code.google.com/p/go.exp/fsnotify"
@@ -84,7 +87,6 @@ func GetFileItem(filePath string, info os.FileInfo) (*fileindex.FileItem, error)
 }
 
 func BuildFileList(filePath, dir string) []*fileindex.FileItem {
-	log.Println("Now watching: " + filepath.Join(filePath, dir))
 	watcher.Watch(filepath.Join(filePath, dir))
 	var fileList []*fileindex.FileItem
 	newPath := filepath.Join(filePath, dir)
@@ -126,6 +128,20 @@ func StartWatch(dir string, fileIndex *fileindex.SafeFileList) {
 	fileList := BuildFileIndex(dir)
 	fileIndex.Copy(fileList)
 
+	mutex := new(sync.Mutex)
+	lock := sync.NewCond(mutex)
+	var okToUpdate int32 = 0
+	go func() {
+		for {
+			mutex.Lock()
+			lock.Wait()
+			for update := false; update; update = !atomic.CompareAndSwapInt32(&okToUpdate, 0, 1) {
+				time.Sleep(5 * time.Second)
+			}
+			fileIndex.UpdateHash()
+		}
+	}()
+
 	go func() {
 		for event := range watcher.Event {
 			name, err := filepath.Rel(SandwichPath, event.Name)
@@ -136,7 +152,6 @@ func StartWatch(dir string, fileIndex *fileindex.SafeFileList) {
 			log.Println(name)
 			switch {
 			case event.IsCreate():
-				log.Println("Created")
 				info, err := os.Stat(fullName)
 				if err == nil && info.IsDir() {
 					fileList := BuildFileList("", fullName)
@@ -148,20 +163,18 @@ func StartWatch(dir string, fileIndex *fileindex.SafeFileList) {
 					}
 				}
 			case event.IsDelete():
-				log.Println("Deleted")
 				fileIndex.Remove(name)
 			case event.IsModify():
-				log.Println("Modified")
 				fileIndex.Remove(name)
 				fileItem, err := GetFileItemName(fullName)
 				if err == nil { //Otherwise the file was deleted before we could create it
 					fileIndex.Add(fileItem)
 				}
 			case event.IsRename():
-				log.Println("Renamed")
 				fileIndex.Remove(name)
 			}
-			fileIndex.UpdateHash()
+			atomic.CompareAndSwapInt32(&okToUpdate, 1, 0)
+			lock.Signal()
 		}
 		log.Println("Watch loop exited")
 		watcher.Close() //This loop should run as long as the program is running

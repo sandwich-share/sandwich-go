@@ -17,7 +17,6 @@ import(
 	"sandwich-go/fileindex"
 	"compress/gzip"
 	"net/url"
-	"fmt"
 	"strings"
 )
 
