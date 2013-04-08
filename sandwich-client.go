@@ -18,6 +18,7 @@ import(
 	"compress/gzip"
 	"net/url"
 	"fmt"
+	"strings"
 )
 
 func Get(address net.IP, extension string) ([]byte, error) {
@@ -42,7 +43,7 @@ func Get(address net.IP, extension string) ([]byte, error) {
 		return nil, err
 	}
 	var data []byte
-	if response.Header.Get("Accept-Encoding") == "gzip, deflate" {
+	if strings.Contains(response.Header.Get("Content-Encoding"), "gzip") {
 		unzipper, err := gzip.NewReader(response.Body)
 		if err != nil {
 			return nil, err
@@ -63,7 +64,6 @@ func DownloadFile(address net.IP, filePath string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(address.String() + GetPort(address))
 
 	url := url.URL{}
 	url.Path = filePath
