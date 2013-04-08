@@ -9,6 +9,13 @@ import(
 	"strings"
 )
 
+type IPFilePair struct {
+	IP net.IP
+	FileName string
+}
+
+var DownloadQueue chan *IPFilePair
+
 // takes a string and returns true if it should be kept, false otherwise
 type Filter interface {
 	Filter(string) bool
@@ -70,6 +77,15 @@ func Search(query string) {
 }
 
 func InitializeUserThread() {
+	DownloadQueue = make(chan *IPFilePair, 1000)
+	go func() {
+		for {
+			select {
+			case filePair := <-DownloadQueue:
+				DownloadFile(filePair.IP, filePair.FileName)
+			}
+		}
+	}()
 	fmt.Println("Hello!")
 	go func() {
 		for {
@@ -79,8 +95,7 @@ func InitializeUserThread() {
 			for {
 				readLength, err := os.Stdin.Read(rdbuf)
 				if err != nil || readLength == 0 {
-					fmt.Println("Shit fucked up");
-					return
+					Shutdown()
 				}
 
 				inputchar := rdbuf[0]
@@ -123,10 +138,7 @@ func InitializeUserThread() {
 					fmt.Printf("Length is: %d\n", len(input))
 					continue
 				}
-				err := DownloadFile(net.ParseIP(input[1]), input[2])
-				if err != nil {
-					fmt.Println(err)
-				}
+				DownloadQueue <- &IPFilePair{net.ParseIP(input[1]), input[2]}
 			case "exit":
 				Shutdown()
 			default:
