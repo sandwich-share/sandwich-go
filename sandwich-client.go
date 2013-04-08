@@ -125,7 +125,6 @@ func GetFileIndex(address net.IP) (*fileindex.FileList, error) {
 		log.Println(err)
 		return nil, err
 	}
-	log.Println(string(resp))
 	fileList := fileindex.Unmarshal(resp)
 	return fileList, err
 }
