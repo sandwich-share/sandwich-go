@@ -20,6 +20,8 @@ import(
 	"strings"
 )
 
+var RemoveSet map[string]time.Time
+
 func Get(address net.IP, extension string) ([]byte, error) {
 	conn, err := net.DialTimeout("tcp", address.String() + GetPort(address), 2 * time.Second)
 	if err != nil {
@@ -158,12 +160,40 @@ func GetPeerList(address net.IP) (addresslist.PeerList, error) {
 	return peerlist, err
 }
 
+func removeDeadEntries(newList addresslist.PeerList) addresslist.PeerList {
+	resultList := make(addresslist.PeerList, 0, len(newList))
+	for _, elem := range newList {
+		lastSeen, ok := RemoveSet[elem.IP.String()]
+		if ok && lastSeen.After(elem.LastSeen) {
+			continue
+		} else if ok {
+			delete(RemoveSet, elem.IP.String())
+		} else {
+			resultList = append(resultList, elem)
+		}
+	}
+	return resultList
+}
+
+func flush() {
+	now := time.Now()
+	for ip, lastSeen := range RemoveSet {
+		if now.Sub(lastSeen) > time.Hour {
+			delete(RemoveSet, ip)
+		}
+	}
+}
+
 func UpdateAddressList(newList addresslist.PeerList) {
 	oldList := AddressList.Contents()
 	var resultList addresslist.PeerList
 	reduceMap := make(map[string]*addresslist.PeerItem)
 	sort.Sort(oldList)
 	sort.Sort(newList)
+	newList = removeDeadEntries(newList)
+	if newList == nil {
+		return
+	}
 	for _, elem := range oldList {
 		if elem.IP.Equal(LocalIP) {
 			continue
@@ -221,6 +251,8 @@ func InitializeKeepAliveLoop() {
 
 func KeepAliveLoop() {
 	log.Println("KeepAliveLoop has been started")
+	RemoveSet = make(map[string]time.Time)
+	lastFlush := time.After(time.Hour)
 	for {
 		var peerList addresslist.PeerList
 		var err error
@@ -242,13 +274,20 @@ func KeepAliveLoop() {
 			peerList, err = GetPeerList(entry.IP)
 			AddressList.RemoveAt(index)
 			if err != nil { //The peer gets deleted from the list if error
+				RemoveSet[entry.IP.String()] = time.Now() //Remember to delete them when merging list
 				log.Println(err)
 				continue //shit happens but we do not want a defunct list
 			}
 			AddressList.Add(&addresslist.PeerItem{entry.IP, entry.IndexHash, time.Now()})
 		}
 		UpdateAddressList(peerList)
-		time.Sleep(2 * time.Second)
+		select {
+		case <-lastFlush:
+			lastFlush = time.After(time.Hour)
+			flush()
+		default:
+			time.Sleep(2 * time.Second)
+		}
 	}
 }
 
