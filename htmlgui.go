@@ -36,5 +36,5 @@ func InitializeFancyStuff() {
   http.HandleFunc("/update", updateHandler)
   http.HandleFunc("/kill", killHandler)
   http.Handle("/static/", http.FileServer(http.Dir("./")))
-  http.ListenAndServe(":8000", nil)
+  http.ListenAndServe("127.0.0.1:8000", nil)
 }
