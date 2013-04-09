@@ -3,15 +3,18 @@
     <head>
         <title>Sandwich File Sharing</title>
         <script type="text/javascript" src="/static/js/jquery.js"></script>
+        <script type="text/javascript" src="/static/js/bootstrap.js"></script>
+        <script type="text/javascript" src="/static/js/bootstrap-notify.js"></script>
         <script type="text/javascript" src="/static/js/custom.js"></script>
         <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.css">
         <link rel="stylesheet" type="text/css" href="/static/css/custom.css">
     </head>
     <body>
         <h1>What's in the Sandwich?</h1>
-        <button class="btn" type="button" id="killbtn">Kill</button>
-        <button class="btn" type="button" id="updatebtn">Update</button>
+        <div class="notifications top-right"></div>
         <div id="controls" class="container">
+          <button class="btn" type="button" id="killbtn">Kill</button>
+          <button class="btn" type="button" id="updatebtn">Update</button>
           <form action="/search" id="query_form">
             <div class="input-append">
               <input type="text" placeholder="Search...">
