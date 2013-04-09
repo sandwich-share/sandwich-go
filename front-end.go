@@ -9,6 +9,7 @@ import(
 
 type IPFilePair struct {
 	IP net.IP
+  Port string
 	FileName string
 }
 
@@ -64,7 +65,8 @@ func Search(query string) []*IPFilePair {
 	fileList = ApplyFilter(fileList, SimpleFilter(query))
 	result := make([]*IPFilePair, 0, len(fileList))
 	for _, fileName := range fileList {
-		result = append(result, &IPFilePair{net.ParseIP(fileMap[fileName]), fileName})
+    ip := net.ParseIP(fileMap[fileName])
+		result = append(result, &IPFilePair{ip, GetPort(ip), fileName})
 	}
 	return result
 }
@@ -79,6 +81,7 @@ func InitializeUserThread() {
 			}
 		}
 	}()
-	//Insert gui initialization code here
+  BuildFileManifest()
+  go InitializeFancyStuff()
 }
 
