@@ -21,10 +21,20 @@ func downloadHandler(w http.ResponseWriter, r *http.Request) {
   DownloadQueue <- &IPFilePair{IP: net.ParseIP(r.FormValue("ip")), FileName: r.FormValue("file")}
 }
 
+func updateHandler(w http.ResponseWriter, r *http.Request) {
+  BuildFileManifest()
+}
+
+func killHandler(w http.ResponseWriter, r *http.Request) {
+  Shutdown()
+}
+
 func InitializeFancyStuff() {
   http.HandleFunc("/", homeHandler)
   http.HandleFunc("/search", searchHandler)
   http.HandleFunc("/download", downloadHandler)
+  http.HandleFunc("/update", updateHandler)
+  http.HandleFunc("/kill", killHandler)
   http.Handle("/static/", http.FileServer(http.Dir("./")))
   http.ListenAndServe(":8000", nil)
 }

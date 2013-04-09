@@ -7,6 +7,16 @@ $(document).ready(function(){
                 $("#content").trigger("change");
             });
     })
+    $("#killbtn").on("click", function(e) {
+      e.preventDefault();
+      $.get("/kill")
+      return false;
+    });
+    $("#updatebtn").on("click", function(e) {
+      e.preventDefault();
+      $.get("/update")
+      return false;
+    });
     x = function(){ $(".dl-link").on("click", function(e) {
         e.preventDefault();
         $.get("/download", {ip: $(this).attr("data-ip"), file: $(this).attr("data-file")});
