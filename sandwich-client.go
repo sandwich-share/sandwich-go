@@ -137,16 +137,61 @@ func GetFileIndex(address net.IP) (*fileindex.FileList, error) {
 	return fileList, err
 }
 
-//TODO: Should make this multithreaded. Take advantage of the fact that we are pinging addresses
-func BuildFileManifest() {
-	peerList := AddressList.Contents()
-	for _, item := range peerList {
-		fileList, err := GetFileIndex(item.IP)
+func getFileIndexLoop(in chan net.IP, out chan fileindex.FileManifest) {
+	resultSet := fileindex.NewFileManifest()
+	for ip := range in {
+		fileList, err := GetFileIndex(ip)
 		if err != nil {
 			continue
 		}
-		FileManifest.Put(item.IP, fileList)
-		log.Println("Got index: " + item.IP.String())
+		resultSet.Put(ip, fileList)
+	}
+	out <- resultSet
+}
+
+func aggregate(manifest fileindex.FileManifest) {
+	for ip, fileList := range manifest {
+		FileManifest[ip] = fileList
+	}
+}
+
+func BuildFileManifest() {
+	peerList := AddressList.Contents()
+	out1 := make(chan net.IP)
+	out2 := make(chan net.IP)
+	out3 := make(chan net.IP)
+	out4 := make(chan net.IP)
+	in1 := make(chan fileindex.FileManifest)
+	in2 := make(chan fileindex.FileManifest)
+	in3 := make(chan fileindex.FileManifest)
+	in4 := make(chan fileindex.FileManifest)
+	go getFileIndexLoop(out1, in1)
+	go getFileIndexLoop(out2, in2)
+	go getFileIndexLoop(out3, in3)
+	go getFileIndexLoop(out4, in4)
+	for _, item := range peerList {
+		select {
+		case out1 <- item.IP:
+		case out2 <- item.IP:
+		case out3 <- item.IP:
+		case out4 <- item.IP:
+		}
+	}
+	close(out1)
+	close(out2)
+	close(out3)
+	close(out4)
+	for i := 0; i < 4; i++ {
+		select {
+		case manifest := <-in1:
+			aggregate(manifest)
+		case manifest := <-in2:
+			aggregate(manifest)
+		case manifest := <-in3:
+			aggregate(manifest)
+		case manifest := <-in4:
+			aggregate(manifest)
+		}
 	}
 }
 
