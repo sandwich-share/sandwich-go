@@ -1,10 +1,8 @@
 package main
 
 import(
-	"fmt"
 	"net"
 	"log"
-	"os"
 	"sort"
 	"strings"
 )
@@ -60,20 +58,15 @@ func ApplyFilter(fileList []string, filter Filter) []string {
 	return results
 }
 
-func PrintFileManifest() {
-	fileMap := ManifestMap()
-	for _, fileName := range SortedManifest(fileMap) {
-		fmt.Println(fileMap[fileName] + " " + fileName)
-	}
-}
-
-func Search(query string) {
+func Search(query string) []*IPFilePair {
 	fileMap := ManifestMap()
 	fileList := SortedManifest(fileMap)
 	fileList = ApplyFilter(fileList, SimpleFilter(query))
+	result := make([]*IPFilePair, 0, len(fileList))
 	for _, fileName := range fileList {
-		fmt.Println(fileMap[fileName] + " " + fileName)
+		result = append(result, &IPFilePair{net.ParseIP(fileMap[fileName]), fileName})
 	}
+	return result
 }
 
 func InitializeUserThread() {
@@ -86,65 +79,6 @@ func InitializeUserThread() {
 			}
 		}
 	}()
-	fmt.Println("Hello!")
-	go func() {
-		for {
-			rdbuf := make([]byte, 1)
-			inputstr := ""
-			fmt.Print("=>")
-			for {
-				readLength, err := os.Stdin.Read(rdbuf)
-				if err != nil || readLength == 0 {
-					Shutdown()
-				}
-
-				inputchar := rdbuf[0]
-				if (inputchar == '\n') {
-					break
-				} else {
-					inputstr += string(inputchar)
-				}
-			}
-
-			input := make([]string, 3)
-
-			splitstring := strings.Split(inputstr, " ")
-			for i, substring := range splitstring {
-				if i < 2 {
-					input[i] = substring
-				} else {
-					if input[2] != "" {
-						input[2] += " "+substring
-					} else {
-						input[2] = substring
-					}
-				}
-			}
-
-			if len(input) < 1 {
-				fmt.Println("Input should be in the form: =>command argument")
-				continue
-			}
-			switch(input[0]) {
-			case "print":
-				PrintFileManifest()
-			case "update":
-				BuildFileManifest()
-			case "search":
-				Search(input[1])
-			case "get":
-				if len(input) != 3 {
-					fmt.Println("Input should be in the form: =>command argument")
-					fmt.Printf("Length is: %d\n", len(input))
-					continue
-				}
-				DownloadQueue <- &IPFilePair{net.ParseIP(input[1]), input[2]}
-			case "exit":
-				Shutdown()
-			default:
-				fmt.Println("Input should be in the form: =>command args")
-			}
-		}
-	}()
+	//Insert gui initialization code here
 }
 

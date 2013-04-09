@@ -149,7 +149,6 @@ func StartWatch(dir string, fileIndex *fileindex.SafeFileList) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			log.Println(name)
 			switch {
 			case event.IsCreate():
 				info, err := os.Stat(fullName)
