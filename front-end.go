@@ -5,6 +5,8 @@ import(
 	"log"
 	"sort"
 	"strings"
+	"time"
+	"sync/atomic"
 )
 
 type IPFilePair struct {
@@ -14,6 +16,7 @@ type IPFilePair struct {
 }
 
 var DownloadQueue chan *IPFilePair
+var timeOut *time.Timer
 
 // takes a string and returns true if it should be kept, false otherwise
 type Filter interface {
@@ -27,6 +30,11 @@ func (filter SimpleFilter) Filter(toCompare string) bool {
 }
 
 func ManifestMap() map[string]string {
+	ManifestLock.Lock()
+	if timeOut == nil || !timeOut.Stop() {
+		CleanManifest()
+	}
+	atomic.StoreInt32(&IsCleanManifest, 1) //Manifest is clean keep it clean
 	fileMap := make(map[string]string)
 	for ip, fileList := range FileManifest {
 		if fileList == nil {
@@ -37,6 +45,10 @@ func ManifestMap() map[string]string {
 			fileMap[fileItem.FileName] = ip
 		}
 	}
+	timeOut = time.AfterFunc(time.Minute, func() {
+		atomic.StoreInt32(&IsCleanManifest, 0) //Timed out let the Manifest get dirty
+	})
+	ManifestLock.Unlock()
 	return fileMap
 }
 
@@ -81,7 +93,7 @@ func InitializeUserThread() {
 			}
 		}
 	}()
-  BuildFileManifest()
-  go InitializeFancyStuff()
+	BuildFileManifest()
+	go InitializeFancyStuff()
 }
 

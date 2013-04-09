@@ -84,9 +84,6 @@ func InitializeServer() error {
 	http.HandleFunc("/file", fileHandler)
 
 	log.Printf("About to listen on %s.\n", GetPort(LocalIP))
-	if Settings.ListenLocal {
-		go http.ListenAndServe(":8000", nil)
-	}
 	err := http.ListenAndServe(GetPort(LocalIP), nil)
 	if err != nil {
 		log.Fatal(err)

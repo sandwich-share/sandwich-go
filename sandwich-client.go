@@ -18,6 +18,7 @@ import(
 	"compress/gzip"
 	"net/url"
 	"strings"
+	"sync/atomic"
 )
 
 var RemoveSet map[string]time.Time
@@ -27,6 +28,7 @@ func Get(address net.IP, extension string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer conn.Close()
 	request, err := http.NewRequest("GET", extension, nil)
 	if err != nil {
 		return nil, err
@@ -56,45 +58,40 @@ func Get(address net.IP, extension string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = conn.Close()
 	return data, err
 }
 
 func DownloadFile(address net.IP, filePath string) error {
-	conn, err := net.DialTimeout("tcp", address.String() + GetPort(address), 10 * time.Second)
+	conn, err := net.DialTimeout("tcp", address.String() + GetPort(address), 2 * time.Minute)
 	if err != nil {
 		return err
 	}
+	defer conn.Close()
 
 	url := url.URL{}
 	url.Path = filePath
 	request, err := http.NewRequest("GET", "/file?path=" + url.String(), nil)
 	if err != nil {
-		conn.Close()
 		return err
 	}
 
 	err = request.Write(conn)
 	if err != nil {
-		conn.Close()
 		return err
 	}
 	buffer := bufio.NewReader(conn)
 	response, err := http.ReadResponse(buffer, request)
 	if err != nil {
-		conn.Close()
 		return err
 	}
 	buffer = bufio.NewReader(response.Body)
 	dirPath, _ := filepath.Split(filePath)
 	err = os.MkdirAll(path.Join(SandwichPath, dirPath), os.ModePerm)
 	if err != nil {
-		conn.Close()
 		return err
 	}
 	file, err := os.Create(path.Join(SandwichPath, filePath))
 	if err != nil {
-		conn.Close()
 		file.Close()
 		return err
 	}
@@ -104,23 +101,19 @@ func DownloadFile(address net.IP, filePath string) error {
 		if err == io.EOF {
 			done = true
 		} else if err != nil {
-			conn.Close()
 			file.Close()
 			return err
 		}
 		_, err = file.Write(byteBuf[:numRead])
 		if err != nil {
-			conn.Close()
 			file.Close()
 			return err
 		}
 	}
 	err = file.Close()
 	if err != nil {
-		conn.Close()
 		return err
 	}
-	err = conn.Close()
 	if err != nil {
 		return err
 	}
@@ -294,6 +287,22 @@ func InitializeKeepAliveLoop() {
 	KeepAliveLoop()
 }
 
+func CleanManifest() {
+	addressList := AddressList.Contents()
+	for _, entry := range addressList {
+		fileIndex, ok := FileManifest[entry.IP.String()]
+		if ok && (entry.IndexHash == fileIndex.IndexHash || fileIndex.TimeStamp.After(entry.LastSeen)) {
+			continue
+		} else {
+			index, err := GetFileIndex(entry.IP)
+			if err != nil {
+				continue
+			}
+			FileManifest[entry.IP.String()] = index
+		}
+	}
+}
+
 func KeepAliveLoop() {
 	log.Println("KeepAliveLoop has been started")
 	RemoveSet = make(map[string]time.Time)
@@ -326,6 +335,11 @@ func KeepAliveLoop() {
 			AddressList.Add(&addresslist.PeerItem{entry.IP, entry.IndexHash, time.Now()})
 		}
 		UpdateAddressList(peerList)
+		if atomic.CompareAndSwapInt32(&IsCleanManifest, 1, 1) {
+			ManifestLock.Lock()
+			CleanManifest()
+			ManifestLock.Unlock()
+		}
 		select {
 		case <-lastFlush:
 			lastFlush = time.After(time.Hour)

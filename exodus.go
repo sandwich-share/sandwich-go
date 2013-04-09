@@ -14,12 +14,15 @@ import(
 	"sandwich-go/directory"
 	"sandwich-go/settings"
 	"runtime"
+	"sync"
 )
 
 var AddressList *addresslist.SafeIPList //Thread safe
 var AddressSet *addresslist.AddressSet //Thread safe
 var FileIndex *fileindex.SafeFileList //Thread safe
 var FileManifest fileindex.FileManifest //NOT THREAD SAFE
+var ManifestLock = new(sync.Mutex)
+var IsCleanManifest int32
 var LocalIP net.IP
 var Settings *settings.Settings
 
@@ -191,9 +194,7 @@ func main() {
 		return
 	}
 	go InitializeKeepAliveLoop()
-	if !Settings.DisableInterface {
-		InitializeUserThread()
-	}
+	InitializeUserThread()
 	if !Settings.WriteLogToScreen {
 		logWriter, err := os.Create("log")
 		if err != nil {

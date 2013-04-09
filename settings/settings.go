@@ -11,8 +11,6 @@ var SettingsPath string
 
 type Settings struct {
 	PingUntilFoundOnStart bool
-	ListenLocal bool
-	DisableInterface bool
 	WriteLogToScreen bool
 	LoopOnEmpty bool
 	DoNotBootStrap bool
