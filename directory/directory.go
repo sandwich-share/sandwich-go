@@ -143,6 +143,7 @@ func StartWatch(dir string, fileIndex *fileindex.SafeFileList) {
 	}()
 
 	go func() {
+		defer watcher.Close() //This loop should run as long as the program is running
 		for event := range watcher.Event {
 			name, err := filepath.Rel(SandwichPath, event.Name)
 			fullName := filepath.Join(SandwichPath, name)
@@ -176,7 +177,6 @@ func StartWatch(dir string, fileIndex *fileindex.SafeFileList) {
 			lock.Signal()
 		}
 		log.Println("Watch loop exited")
-		watcher.Close() //This loop should run as long as the program is running
 	}()
 }
 

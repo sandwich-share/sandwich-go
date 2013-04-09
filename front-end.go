@@ -53,7 +53,7 @@ func ManifestMap() map[string]string {
 }
 
 func SortedManifest(fileMap map[string]string) []string {
-	fileList := make([]string, 1)
+	fileList := make([]string, 0, len(fileMap))
 	for fileName := range fileMap {
 		fileList = append(fileList, fileName)
 	}
@@ -62,7 +62,7 @@ func SortedManifest(fileMap map[string]string) []string {
 }
 
 func ApplyFilter(fileList []string, filter Filter) []string {
-	results := make([]string, 1)
+	results := make([]string, 0, len(fileList))
 	for _, fileName := range fileList {
 		if filter.Filter(fileName) {
 			results = append(results, fileName)
