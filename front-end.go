@@ -89,7 +89,12 @@ func InitializeUserThread() {
 		for {
 			select {
 			case filePair := <-DownloadQueue:
-				DownloadFile(filePair.IP, filePair.FileName)
+				log.Println("Downloading file:" + filePair.FileName)
+				err := DownloadFile(filePair.IP, filePair.FileName)
+				if err != nil {
+					log.Println(err)
+				}
+				log.Println("Downloading complete")
 			}
 		}
 	}()
