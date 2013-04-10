@@ -13,7 +13,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
-	f := Search(r.FormValue("search"))
+	f := Search(r.FormValue("search"), r.FormValue("regex")=="true")
 	templates.ExecuteTemplate(w, "query_result.html", f)
 }
 

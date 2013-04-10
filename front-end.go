@@ -4,9 +4,10 @@ import(
 	"net"
 	"log"
 	"sort"
-	"strings"
 	"time"
 	"sync/atomic"
+  "regexp"
+  "strings"
 )
 
 type IPFilePair struct {
@@ -25,8 +26,19 @@ type Filter interface {
 
 type SimpleFilter string
 
+type RegexFilter string
+
+func (filter RegexFilter) Filter(toCompare string) bool {
+  r, err := regexp.Compile(string(filter))
+  if err != nil {
+    log.Println("Invalid regex")
+    return false
+  }
+  return r.MatchString(string(toCompare))
+}
+
 func (filter SimpleFilter) Filter(toCompare string) bool {
-	return strings.Contains(toCompare, string(filter))
+	return strings.Contains(strings.ToLower(toCompare), strings.ToLower(string(filter)))
 }
 
 func ManifestMap() map[string]string {
@@ -71,10 +83,14 @@ func ApplyFilter(fileList []string, filter Filter) []string {
 	return results
 }
 
-func Search(query string) []*IPFilePair {
+func Search(query string, regex bool) []*IPFilePair {
 	fileMap := ManifestMap()
 	fileList := SortedManifest(fileMap)
-	fileList = ApplyFilter(fileList, SimpleFilter(query))
+  if regex {
+    fileList = ApplyFilter(fileList, RegexFilter(query))
+  } else {
+    fileList = ApplyFilter(fileList, SimpleFilter(query))
+  }
 	result := make([]*IPFilePair, 0, len(fileList))
 	for _, fileName := range fileList {
     ip := net.ParseIP(fileMap[fileName])
