@@ -1,18 +1,19 @@
 package main
 
-import(
-	"net"
+import (
+	"github.com/toqueteos/webbrowser"
 	"log"
+	"net"
+	"regexp"
 	"sort"
-	"time"
+	"strings"
 	"sync/atomic"
-  "regexp"
-  "strings"
+	"time"
 )
 
 type IPFilePair struct {
-	IP net.IP
-  Port string
+	IP       net.IP
+	Port     string
 	FileName string
 }
 
@@ -29,12 +30,12 @@ type SimpleFilter string
 type RegexFilter string
 
 func (filter RegexFilter) Filter(toCompare string) bool {
-  r, err := regexp.Compile(string(filter))
-  if err != nil {
-    log.Println("Invalid regex")
-    return false
-  }
-  return r.MatchString(string(toCompare))
+	r, err := regexp.Compile(string(filter))
+	if err != nil {
+		log.Println("Invalid regex")
+		return false
+	}
+	return r.MatchString(string(toCompare))
 }
 
 func (filter SimpleFilter) Filter(toCompare string) bool {
@@ -86,14 +87,14 @@ func ApplyFilter(fileList []string, filter Filter) []string {
 func Search(query string, regex bool) []*IPFilePair {
 	fileMap := ManifestMap()
 	fileList := SortedManifest(fileMap)
-  if regex {
-    fileList = ApplyFilter(fileList, RegexFilter(query))
-  } else {
-    fileList = ApplyFilter(fileList, SimpleFilter(query))
-  }
+	if regex {
+		fileList = ApplyFilter(fileList, RegexFilter(query))
+	} else {
+		fileList = ApplyFilter(fileList, SimpleFilter(query))
+	}
 	result := make([]*IPFilePair, 0, len(fileList))
 	for _, fileName := range fileList {
-    ip := net.ParseIP(fileMap[fileName])
+		ip := net.ParseIP(fileMap[fileName])
 		result = append(result, &IPFilePair{ip, GetPort(ip), fileName})
 	}
 	return result
@@ -116,5 +117,5 @@ func InitializeUserThread() {
 	}()
 	BuildFileManifest()
 	go InitializeFancyStuff()
+	webbrowser.Open("http://localhost:8000")
 }
-

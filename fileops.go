@@ -1,13 +1,13 @@
 package main
 
-import(
-	"path/filepath"
-	"net"
+import (
 	"crypto/md5"
-	"strconv"
 	"io/ioutil"
 	"log"
+	"net"
+	"path/filepath"
 	"sandwich-go/addresslist"
+	"strconv"
 	"time"
 )
 
@@ -57,4 +57,3 @@ func Save(list addresslist.PeerList) error {
 func MakeLocalPeerItem() *addresslist.PeerItem {
 	return &addresslist.PeerItem{LocalIP, FileIndex.IndexHash(), time.Now()}
 }
-

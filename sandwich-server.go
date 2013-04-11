@@ -1,13 +1,13 @@
 package main
 
-import(
+import (
+	"compress/gzip"
+	"io"
+	"log"
 	"net"
 	"net/http"
-	"log"
 	"net/url"
 	"strings"
-	"io"
-	"compress/gzip"
 )
 
 // this will eventually resize, but right now you can't have more than 500 peers.
@@ -91,4 +91,3 @@ func InitializeServer() error {
 	}
 	return nil
 }
-

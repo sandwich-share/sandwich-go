@@ -1,30 +1,30 @@
 package main
 
-import(
-	"net"
-	"log"
+import (
+	"bufio"
+	"compress/gzip"
 	"io"
 	"io/ioutil"
+	"log"
 	"math/rand"
-	"sort"
-	"time"
-	"sandwich-go/addresslist"
+	"net"
 	"net/http"
-	"bufio"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
+	"sandwich-go/addresslist"
 	"sandwich-go/fileindex"
-	"compress/gzip"
-	"net/url"
+	"sort"
 	"strings"
 	"sync/atomic"
+	"time"
 )
 
 var RemoveSet map[string]time.Time
 
 func Get(address net.IP, extension string) ([]byte, error) {
-	conn, err := net.DialTimeout("tcp", address.String() + GetPort(address), 2 * time.Second)
+	conn, err := net.DialTimeout("tcp", address.String()+GetPort(address), 2*time.Second)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func Get(address net.IP, extension string) ([]byte, error) {
 }
 
 func DownloadFile(address net.IP, filePath string) error {
-	conn, err := net.DialTimeout("tcp", address.String() + GetPort(address), 2 * time.Minute)
+	conn, err := net.DialTimeout("tcp", address.String()+GetPort(address), 2*time.Minute)
 	if err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func DownloadFile(address net.IP, filePath string) error {
 
 	url := url.URL{}
 	url.Path = filePath
-	request, err := http.NewRequest("GET", "/file?path=" + url.String(), nil)
+	request, err := http.NewRequest("GET", "/file?path="+url.String(), nil)
 	if err != nil {
 		return err
 	}
@@ -189,7 +189,7 @@ func BuildFileManifest() {
 }
 
 func GetPeerList(address net.IP) (addresslist.PeerList, error) {
-	resp, err := Get(address ,"/peerlist/")
+	resp, err := Get(address, "/peerlist/")
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -266,7 +266,7 @@ func UpdateAddressList(newList addresslist.PeerList) {
 }
 
 func Ping(address net.IP) bool {
-	resp, err := Get(address, "/ping/");
+	resp, err := Get(address, "/ping/")
 	if err != nil {
 		log.Println(err)
 		return false
@@ -282,7 +282,8 @@ func InitializeKeepAliveLoop() {
 		log.Fatal("AddressList ran out of peers")
 	}
 	if Settings.PingUntilFoundOnStart {
-		for !Ping(AddressList.At(0).IP) {}
+		for !Ping(AddressList.At(0).IP) {
+		}
 	}
 	KeepAliveLoop()
 }
@@ -349,4 +350,3 @@ func KeepAliveLoop() {
 		}
 	}
 }
-

@@ -1,25 +1,25 @@
 package main
 
-import(
+import (
 	"fmt"
+	"io/ioutil"
+	"log"
+	"net"
 	"os"
 	"os/user"
 	"path/filepath"
-	"log"
-	"io/ioutil"
-	"strings"
-	"sandwich-go/addresslist"
-	"net"
-	"sandwich-go/fileindex"
-	"sandwich-go/directory"
-	"sandwich-go/settings"
 	"runtime"
+	"sandwich-go/addresslist"
+	"sandwich-go/directory"
+	"sandwich-go/fileindex"
+	"sandwich-go/settings"
+	"strings"
 	"sync"
 )
 
 var AddressList *addresslist.SafeIPList //Thread safe
-var AddressSet *addresslist.AddressSet //Thread safe
-var FileIndex *fileindex.SafeFileList //Thread safe
+var AddressSet *addresslist.AddressSet  //Thread safe
+var FileIndex *fileindex.SafeFileList   //Thread safe
 var FileManifest fileindex.FileManifest //NOT THREAD SAFE
 var ManifestLock = new(sync.Mutex)
 var IsCleanManifest int32
@@ -208,4 +208,3 @@ func main() {
 		return
 	}
 }
-

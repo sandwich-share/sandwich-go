@@ -2,8 +2,8 @@ package main
 
 import (
 	"html/template"
-	"net/http"
 	"net"
+	"net/http"
 )
 
 var templates = template.Must(template.ParseFiles("templates/index.html", "templates/query_result.html"))
@@ -13,7 +13,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
-	f := Search(r.FormValue("search"), r.FormValue("regex")=="true")
+	f := Search(r.FormValue("search"), r.FormValue("regex") == "true")
 	templates.ExecuteTemplate(w, "query_result.html", f)
 }
 
@@ -33,4 +33,3 @@ func InitializeFancyStuff() {
 	http.Handle("/static/", http.FileServer(http.Dir("./")))
 	http.ListenAndServe(":8000", nil)
 }
-
