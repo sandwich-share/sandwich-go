@@ -52,5 +52,5 @@ func InitializeFancyStuff() {
 	http.HandleFunc("/download", downloadHandler)
 	http.HandleFunc("/kill", killHandler)
 	http.Handle("/static/", http.FileServer(http.Dir("./")))
-	http.ListenAndServe(":8000", nil)
+	http.ListenAndServe(":"+Settings.LocalServerPort, nil)
 }

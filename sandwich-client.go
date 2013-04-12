@@ -70,7 +70,7 @@ func DownloadFile(address net.IP, filePath string) error {
 
 	url := url.URL{}
 	url.Path = filePath
-	request, err := http.NewRequest("GET", "/files/" + url.String(), nil)
+	request, err := http.NewRequest("GET", "/files/"+url.String(), nil)
 	if err != nil {
 		return err
 	}

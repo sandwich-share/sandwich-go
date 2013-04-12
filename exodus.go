@@ -122,6 +122,9 @@ func InitializeSettings() error {
 	if err != nil {
 		Settings = &settings.Settings{}
 	}
+	if Settings.LocalServerPort == "" {
+		Settings.LocalServerPort = "9001"
+	}
 	Settings.Save()
 	if Settings.SandwichDirName != "" {
 		SandwichPath = Settings.SandwichDirName

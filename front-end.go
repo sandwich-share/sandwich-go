@@ -121,5 +121,7 @@ func InitializeUserThread() {
 	}()
 	BuildFileManifest()
 	go InitializeFancyStuff()
-	webbrowser.Open("http://localhost:8000")
+	if !Settings.DontOpenBrowserOnStart {
+		webbrowser.Open("http://localhost:" + Settings.LocalServerPort)
+	}
 }

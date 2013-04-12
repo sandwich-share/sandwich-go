@@ -16,6 +16,8 @@ type Settings struct {
 	DoNotBootStrap bool
 	CheckSumMaxSize int64
 	SandwichDirName string
+	LocalServerPort string
+	DontOpenBrowserOnStart bool
 }
 
 func (settings *Settings) Save() error {
