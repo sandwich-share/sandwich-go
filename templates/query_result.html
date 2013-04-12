@@ -1,7 +1,7 @@
 {{ range . }}
 <tr>
   <td>{{ .IP }}</td>
-  <td><a href="http://{{.IP}}{{.Port}}/file?path={{.FileName}}"> {{ .FileName }}</a></td>
+  <td><a href="http://{{.IP}}{{.Port}}/files/{{.FileName}}"> {{ .FileName }}</a></td>
   <td><a href="#" class="dl-link" data-ip="{{.IP}}" data-file="{{.FileName}}">Download</a></td>
 </tr>
 {{ end }}

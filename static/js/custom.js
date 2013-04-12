@@ -111,7 +111,7 @@ $(document).ready(function(){
 				if (data.length < 100) { gotall = true }
 				$("#file_list").html(data);
 				$("#loading").hide()
-				x();
+				add_dl_listeners();
 			},
 			beforeSend: function(){
 				$("#file_list").html("");
@@ -133,11 +133,11 @@ $(document).ready(function(){
 				loading = false;
 				if (data.length < 100) { gotall = true }
 				$("#file_list").append(data);
-				x();
+				add_dl_listeners();
 			});
 		}
 	});
-	x = function(){ $(".dl-link").on("click", function(e) {
+	add_dl_listeners = function(){ $(".dl-link").on("click", function(e) {
 		e.preventDefault();
 		$.get("/download", {ip: $(this).attr("data-ip"), file: $(this).attr("data-file")});
 		$(".top-right").notify({message: {text: "Download started..."}}).show();
