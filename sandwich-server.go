@@ -6,7 +6,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"net/url"
 	"strings"
 )
 
@@ -34,19 +33,6 @@ func peerListHandler(writer http.ResponseWriter, request *http.Request) {
 	log.Println("Copied list")
 	json := addressList.Marshal()
 	writer.Write(json)
-	AddressSet.Add(net.ParseIP(strings.Split(request.RemoteAddr, ":")[0]))
-}
-
-func fileHandler(writer http.ResponseWriter, request *http.Request) {
-	var err error
-	query := request.URL.RawQuery
-	split := strings.Split(query, "=")
-	request.URL, err = url.Parse(split[1])
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-	http.FileServer(http.Dir(SandwichPath)).ServeHTTP(writer, request)
 	AddressSet.Add(net.ParseIP(strings.Split(request.RemoteAddr, ":")[0]))
 }
 
@@ -80,8 +66,8 @@ func makeGzipHandler(fn http.HandlerFunc) http.HandlerFunc {
 func InitializeServer() error {
 	http.HandleFunc("/peerlist/", makeGzipHandler(peerListHandler))
 	http.HandleFunc("/ping/", pingHandler)
-	http.HandleFunc("/indexfor/", makeGzipHandler(indexForHandler))
-	http.HandleFunc("/file", fileHandler)
+	http.HandleFunc("/fileindex/", makeGzipHandler(indexForHandler))
+	http.Handle("/files/", http.StripPrefix("/files/", http.FileServer(http.Dir(SandwichPath))))
 
 	log.Printf("About to listen on %s.\n", GetPort(LocalIP))
 	err := http.ListenAndServe(GetPort(LocalIP), nil)

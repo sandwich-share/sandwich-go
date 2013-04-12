@@ -70,7 +70,7 @@ func DownloadFile(address net.IP, filePath string) error {
 
 	url := url.URL{}
 	url.Path = filePath
-	request, err := http.NewRequest("GET", "/file?path="+url.String(), nil)
+	request, err := http.NewRequest("GET", "/files/" + url.String(), nil)
 	if err != nil {
 		return err
 	}
@@ -121,7 +121,7 @@ func DownloadFile(address net.IP, filePath string) error {
 }
 
 func GetFileIndex(address net.IP) (*fileindex.FileList, error) {
-	resp, err := Get(address, "/indexfor/")
+	resp, err := Get(address, "/fileindex/")
 	if err != nil {
 		log.Println(err)
 		return nil, err
