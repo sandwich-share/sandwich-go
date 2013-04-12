@@ -186,6 +186,7 @@ func BuildFileManifest() {
 			aggregate(manifest)
 		}
 	}
+	log.Println("File index created")
 }
 
 func GetPeerList(address net.IP) (addresslist.PeerList, error) {

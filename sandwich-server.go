@@ -30,7 +30,6 @@ func peerListHandler(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Content-Type", "text/json")
 	addressList := AddressList.Contents() //Gets a copy of the underlying IPSlice
 	addressList = append(addressList, MakeLocalPeerItem())
-	log.Println("Copied list")
 	json := addressList.Marshal()
 	writer.Write(json)
 	AddressSet.Add(net.ParseIP(strings.Split(request.RemoteAddr, ":")[0]))
