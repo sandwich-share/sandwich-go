@@ -47,10 +47,12 @@ func killHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func InitializeFancyStuff() {
-	http.HandleFunc("/", homeHandler)
-	http.HandleFunc("/search", searchHandler)
-	http.HandleFunc("/download", downloadHandler)
-	http.HandleFunc("/kill", killHandler)
-	http.Handle("/static/", http.FileServer(http.Dir("./")))
-	http.ListenAndServe(":"+Settings.LocalServerPort, nil)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", homeHandler)
+	mux.HandleFunc("/search", searchHandler)
+	mux.HandleFunc("/download", downloadHandler)
+	mux.HandleFunc("/kill", killHandler)
+	mux.Handle("/static/", http.FileServer(http.Dir("./")))
+	srv := &http.Server{Handler: mux, Addr: ":"+Settings.LocalServerPort}
+	srv.ListenAndServe()
 }

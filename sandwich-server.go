@@ -64,13 +64,15 @@ func makeGzipHandler(fn http.HandlerFunc) http.HandlerFunc {
 }
 
 func InitializeServer() error {
-	http.HandleFunc("/peerlist/", makeGzipHandler(peerListHandler))
-	http.HandleFunc("/ping/", pingHandler)
-	http.HandleFunc("/fileindex/", makeGzipHandler(indexForHandler))
-	http.Handle("/files/", http.StripPrefix("/files/", http.FileServer(http.Dir(SandwichPath))))
+	mux := http.NewServeMux()
+	mux.HandleFunc("/peerlist/", makeGzipHandler(peerListHandler))
+	mux.HandleFunc("/ping/", pingHandler)
+	mux.HandleFunc("/fileindex/", makeGzipHandler(indexForHandler))
+	mux.Handle("/files/", http.StripPrefix("/files/", http.FileServer(http.Dir(SandwichPath))))
 
 	log.Printf("About to listen on %s.\n", GetPort(LocalIP))
-	err := http.ListenAndServe(GetPort(LocalIP), nil)
+	srv := &http.Server{Handler: mux, Addr: GetPort(LocalIP)}
+	err := srv.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)
 		return err
