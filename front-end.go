@@ -85,6 +85,7 @@ func ApplyFilter(fileList []string, filter Filter) []string {
 }
 
 func Search(query string, regex bool) []*IPFilePair {
+	log.Println("Searching for " + query)
 	fileMap := ManifestMap()
 	fileList := SortedManifest(fileMap)
 	if regex {
@@ -97,6 +98,7 @@ func Search(query string, regex bool) []*IPFilePair {
 		ip := net.ParseIP(fileMap[fileName])
 		result = append(result, &IPFilePair{ip, GetPort(ip), fileName})
 	}
+	log.Println("Search completed for " + query)
 	return result
 }
 

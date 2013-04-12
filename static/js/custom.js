@@ -21,9 +21,9 @@
 	var Notification = function (element, options) {
 		// Element collection
 		this.$element = $(element);
-		this.$note    = $('<div class="alert"></div>');
-		this.options  = $.extend(true, {}, $.fn.notify.defaults, options);
-		this._link    = null;
+		this.$note		= $('<div class="alert"></div>');
+		this.options	= $.extend(true, {}, $.fn.notify.defaults, options);
+		this._link		= null;
 
 		// Setup from options
 		if (this.options.transition)
@@ -91,14 +91,20 @@
 	}
 })(window.jQuery);
 
+//Custom JS code to do some stuff
 $(document).ready(function(){
+	var start;
+	var gotall = false;
 	$("#query_form").on("submit", function(e) {
+		start = 0;
 		e.preventDefault();
 		$.get("/search", {search:
 			$(this).find("input[type=text]").val(),
-      regex: $(this).find("input[name=regex]").is(":checked")}, function(data){
-				$("#content").html(data);
-				$("#content").trigger("change");
+			regex: $(this).find("input[name=regex]").is(":checked"),
+			start: 0}, function(data){
+				if (data.length < 100) { gotall = true }
+				$("#file_list").html(data);
+				x();
 			});
 	})
 	$("#killbtn").on("click", function(e) {
@@ -108,11 +114,20 @@ $(document).ready(function(){
 		}
 		return false;
 	});
+	$(window).scroll(function() {
+		if (!gotall && $(window).scrollTop() >= $(document).height() - $(window).height() - 50) {
+			start += 100;
+			$.get("/search", {start: start}, function(data){
+				if (data.length < 100) { gotall = true }
+				$("#file_list").append(data);
+				x();
+			});
+		}
+	});
 	x = function(){ $(".dl-link").on("click", function(e) {
 		e.preventDefault();
 		$.get("/download", {ip: $(this).attr("data-ip"), file: $(this).attr("data-file")});
 		$(".top-right").notify({message: {text: "Download started..."}}).show();
 	})}
-	$("#content").on("change", x);
 })
 
