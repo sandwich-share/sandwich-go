@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"net"
 	"net/http"
@@ -20,13 +21,21 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	regex := r.FormValue("regex") == "true"
 	start, _ := strconv.Atoi(r.FormValue("start"))
 	if start == 0 {
-		cache = Search(search, regex)
+		var err error
+		cache, err = Search(search, regex)
+		if err != nil {
+			fmt.Fprintf(w, "Invalid regex")
+		}
 	}
 	end := start + 100
 	if (len(cache) - 1) < end {
 		end = len(cache) - 1
 	}
-	templates.ExecuteTemplate(w, "query_result.html", cache[start:end])
+	if start > len(cache)-1 {
+		fmt.Fprintf(w, "")
+	} else {
+		templates.ExecuteTemplate(w, "query_result.html", cache[start:end])
+	}
 }
 
 func downloadHandler(w http.ResponseWriter, r *http.Request) {

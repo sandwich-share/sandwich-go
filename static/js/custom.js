@@ -95,17 +95,28 @@
 $(document).ready(function(){
 	var start;
 	var gotall = false;
+	var loading = false;
 	$("#query_form").on("submit", function(e) {
 		start = 0;
+		gotall = false;
+		loading = false;
 		e.preventDefault();
-		$.get("/search", {search:
+		$.ajax({
+			url: "/search",
+			data: {search:
 			$(this).find("input[type=text]").val(),
 			regex: $(this).find("input[name=regex]").is(":checked"),
-			start: 0}, function(data){
+			start: 0}, 
+			success: function(data){
 				if (data.length < 100) { gotall = true }
 				$("#file_list").html(data);
+				$("#loading").hide()
 				x();
-			});
+			},
+			beforeSend: function(){
+				$("#file_list").html("");
+				$("#loading").show();
+			}});
 	})
 	$("#killbtn").on("click", function(e) {
 		e.preventDefault();
@@ -115,9 +126,11 @@ $(document).ready(function(){
 		return false;
 	});
 	$(window).scroll(function() {
-		if (!gotall && $(window).scrollTop() >= $(document).height() - $(window).height() - 50) {
+		if (!loading && !gotall && $(window).scrollTop() >= $(document).height() - $(window).height() - 30) {
+			loading = true;
 			start += 100;
 			$.get("/search", {start: start}, function(data){
+				loading = false;
 				if (data.length < 100) { gotall = true }
 				$("#file_list").append(data);
 				x();

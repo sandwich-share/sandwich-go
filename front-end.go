@@ -27,15 +27,11 @@ type Filter interface {
 
 type SimpleFilter string
 
-type RegexFilter string
+type RegexFilter regexp.Regexp
 
-func (filter RegexFilter) Filter(toCompare string) bool {
-	r, err := regexp.Compile(string(filter))
-	if err != nil {
-		log.Println("Invalid regex")
-		return false
-	}
-	return r.MatchString(string(toCompare))
+func (filter *RegexFilter) Filter(toCompare string) bool {
+	x := regexp.Regexp(*filter)
+	return (&x).MatchString(string(toCompare))
 }
 
 func (filter SimpleFilter) Filter(toCompare string) bool {
@@ -84,12 +80,18 @@ func ApplyFilter(fileList []string, filter Filter) []string {
 	return results
 }
 
-func Search(query string, regex bool) []*IPFilePair {
+func Search(query string, regex bool) ([]*IPFilePair, error) {
 	log.Println("Searching for " + query)
 	fileMap := ManifestMap()
 	fileList := SortedManifest(fileMap)
 	if regex {
-		fileList = ApplyFilter(fileList, RegexFilter(query))
+		r, err := regexp.Compile(string(query))
+		if err != nil {
+			log.Println("Invalid regex")
+			return nil, err
+		}
+		x := RegexFilter(*r)
+		fileList = ApplyFilter(fileList, &x)
 	} else {
 		fileList = ApplyFilter(fileList, SimpleFilter(query))
 	}
@@ -99,7 +101,7 @@ func Search(query string, regex bool) []*IPFilePair {
 		result = append(result, &IPFilePair{ip, GetPort(ip), fileName})
 	}
 	log.Println("Search completed for " + query)
-	return result
+	return result, nil
 }
 
 func InitializeUserThread() {
