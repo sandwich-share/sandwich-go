@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -18,8 +19,8 @@ import (
 )
 
 var AddressList *addresslist.SafeIPList //Thread safe
-var AddressSet *addresslist.AddressSet  //Thread safe
-var FileIndex *fileindex.SafeFileList   //Thread safe
+var AddressSet *addresslist.AddressSet	//Thread safe
+var FileIndex *fileindex.SafeFileList		//Thread safe
 var FileManifest fileindex.FileManifest //NOT THREAD SAFE
 var ManifestLock = new(sync.Mutex)
 var IsCleanManifest int32
@@ -63,6 +64,19 @@ func InitializeAddressList() error {
 }
 
 func GetLocalIP() error {
+	resp, err := http.Get("http://curlmyip.com")
+	if err != nil {
+		log.Println("Failed to retrieve IP from curlmyip")
+		return err
+	}
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("Failed to read body")
+		return err
+	} else {
+		LocalIP = net.ParseIP(string(b))
+		return nil
+	}
 	conn, err := net.Dial("tcp", "google.com:80")
 	if err != nil {
 		log.Fatal(err)
