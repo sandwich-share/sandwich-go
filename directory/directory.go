@@ -59,20 +59,6 @@ func GetFileItemName(name string) (*fileindex.FileItem, error) {
 		log.Println(err)
 		return nil, err
 	}
-	//Fix for different volume symlinks
-	for info.Mode() & os.ModeSymlink == os.ModeSymlink {
-		name, err = os.Readlink(info.Name())
-		if err != nil {
-			log.Println(err)
-			return nil, err
-		}
-		info, err = os.Stat(name)
-		_, ok := err.(*os.PathError)
-		if err != nil && ok {
-			log.Println(err)
-			return nil, err
-		}
-	}
 	dirPath, _ := filepath.Split(name)
 	return GetFileItem(dirPath, info)
 }
