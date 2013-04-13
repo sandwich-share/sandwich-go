@@ -44,8 +44,8 @@ type SimpleFilter string
 type RegexFilter regexp.Regexp
 
 func (filter *RegexFilter) Filter(toCompare IPFilePair) bool {
-	x := regexp.Regexp(*filter)
-	return (&x).MatchString(string(toCompare.FileName))
+	regex := regexp.Regexp(*filter)
+	return (&regex).MatchString(string(toCompare.FileName))
 }
 
 func (filter SimpleFilter) Filter(toCompare IPFilePair) bool {
@@ -118,7 +118,7 @@ func InitializeUserThread() {
 			}
 		}
 	}()
-	go BuildFileManifest()
+	BuildFileManifest()
 	go InitializeFancyStuff()
 	if !Settings.DontOpenBrowserOnStart {
 		webbrowser.Open("http://localhost:" + Settings.LocalServerPort)
