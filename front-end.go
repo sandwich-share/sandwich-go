@@ -93,8 +93,8 @@ func Search(query string, regex bool) (IPFilePairs, error) {
 			log.Println("Invalid regex")
 			return nil, err
 		}
-		x := RegexFilter(*r)
-		fileList = ApplyFilter(fileMap, &x)
+		regexFilter := RegexFilter(*r)
+		fileList = ApplyFilter(fileMap, &regexFilter)
 	} else {
 		fileList = ApplyFilter(fileMap, SimpleFilter(query))
 	}
