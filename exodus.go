@@ -66,26 +66,25 @@ func InitializeAddressList() error {
 func GetLocalIP() error {
 	resp, err := http.Get("http://curlmyip.com")
 	if err != nil {
-		log.Println("Failed to retrieve IP from curlmyip")
-		return err
-	}
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Println("Failed to read body")
-		return err
+		log.Println(err)
+		conn, err := net.Dial("tcp", "google.com:80")
+		if err != nil {
+			log.Fatal(err)
+			return err
+		}
+		LocalIP = net.ParseIP(strings.Split(conn.LocalAddr().String(), ":")[0])
+		err = conn.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
 	} else {
-		LocalIP = net.ParseIP(string(b))
-		return nil
-	}
-	conn, err := net.Dial("tcp", "google.com:80")
-	if err != nil {
-		log.Fatal(err)
-		return err
-	}
-	LocalIP = net.ParseIP(strings.Split(conn.LocalAddr().String(), ":")[0])
-	err = conn.Close()
-	if err != nil {
-		log.Fatal(err)
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Println("Failed to read body")
+			return err
+		} else {
+			LocalIP = net.ParseIP(strings.TrimSpace(string(b)))
+		}
 	}
 	log.Println("Local IP is: " + LocalIP.String())
 	return nil
