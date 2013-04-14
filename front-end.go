@@ -122,17 +122,20 @@ func InitializeUserThread() {
 		}
 	}()
 	file, err := os.Open(ConfPath("manifest-cache.xml"))
-	if err != nil {
+	if err != nil && os.IsNotExist(err) {
+		BuildFileManifest()
+	} else if err != nil {
 		log.Println(err)
 		BuildFileManifest()
 	} else if xml, err := ioutil.ReadAll(file); err != nil {
 		log.Println(err)
 		BuildFileManifest()
+		file.Close()
 	} else {
 		FileManifest = fileindex.UnmarshalManifest(xml)
 		CleanManifest()
+		file.Close()
 	}
-	file.Close()
 	go InitializeFancyStuff()
 	if !Settings.DontOpenBrowserOnStart {
 		webbrowser.Open("http://localhost:" + Settings.LocalServerPort)

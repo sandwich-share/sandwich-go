@@ -183,7 +183,10 @@ func BootStrap() error {
 
 func Shutdown() {
 	ioutil.WriteFile(ConfPath("peerlist"), AddressList.Contents().Marshal(), os.ModePerm)
-	ioutil.WriteFile(ConfPath("manifest-cache.xml"), FileManifest.Marshal(), os.ModePerm)
+	err := ioutil.WriteFile(ConfPath("manifest-cache.xml"), FileManifest.Marshal(), os.ModePerm)
+	if err != nil {
+		log.Println(err)
+	}
 	Settings.Save()
 	os.Exit(0)
 }
