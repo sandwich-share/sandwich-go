@@ -313,7 +313,8 @@ func KeepAliveLoop() {
 		var peerList addresslist.PeerList
 		var err error
 		if AddressSet.Len() > 0 {
-			peerList, err = GetPeerList(AddressSet.Pop())
+			address := AddressSet.Pop()
+			peerList, err = GetPeerList(address)
 			if err != nil { //The peer gets deleted from the list if error
 				log.Println(err)
 				continue //shit happens but we do not want a defunct list

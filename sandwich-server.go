@@ -9,13 +9,13 @@ import (
 	"strings"
 )
 
-// this will eventually resize, but right now you can't have more than 500 peers.
-var defaultPeerListSize = 500
-
 func pingHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 	w.Write([]byte("pong\n"))
-	AddressSet.Add(net.ParseIP(strings.Split(req.RemoteAddr, ":")[0]))
+	ip := net.ParseIP(strings.Split(req.RemoteAddr, ":")[0])
+	if !AddressList.Contains(ip) {
+		AddressSet.Add(ip)
+	}
 }
 
 func indexForHandler(w http.ResponseWriter, req *http.Request) {
@@ -23,7 +23,10 @@ func indexForHandler(w http.ResponseWriter, req *http.Request) {
 	listCopy := FileIndex.Contents()
 	w.Write(listCopy.Marshal())
 	log.Println("Sent index")
-	AddressSet.Add(net.ParseIP(strings.Split(req.RemoteAddr, ":")[0]))
+	ip := net.ParseIP(strings.Split(req.RemoteAddr, ":")[0])
+	if !AddressList.Contains(ip) {
+		AddressSet.Add(ip)
+	}
 }
 
 func peerListHandler(writer http.ResponseWriter, request *http.Request) {

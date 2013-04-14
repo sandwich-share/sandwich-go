@@ -2,6 +2,7 @@ package addresslist
 
 import(
 	"sync"
+	"net"
 )
 
 // A thread safe wrapper around an IPSlice
@@ -13,6 +14,13 @@ type SafeIPList struct {
 func New(list PeerList) *SafeIPList {
 	var mutex sync.RWMutex
 	return &SafeIPList{list, mutex}
+}
+
+func(list *SafeIPList) Contains(ip net.IP) bool {
+	list.m.RLock()
+	result := list.list.Contains(ip)
+	list.m.RUnlock()
+	return result
 }
 
 func (list *SafeIPList) Add(entry *PeerItem) {
