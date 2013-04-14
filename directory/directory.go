@@ -164,7 +164,11 @@ func StartWatch(dir string, fileIndex *fileindex.SafeFileList) {
 				} else if err == nil {
 					fileItem, err := GetFileItemName(fullName)
 					if err == nil { //Otherwise the file was deleted before we could create it
-						fileIndex.Add(fileItem)
+						if utf8.ValidString(fileItem.FileName) {
+							fileList.Add(fileItem)
+						} else {
+							log.Println("Hey bra, you cannot have non-utf8 encoded file names")
+						}
 					}
 				}
 			case event.IsDelete():
@@ -173,7 +177,11 @@ func StartWatch(dir string, fileIndex *fileindex.SafeFileList) {
 				fileIndex.Remove(name)
 				fileItem, err := GetFileItemName(fullName)
 				if err == nil { //Otherwise the file was deleted before we could create it
-					fileIndex.Add(fileItem)
+					if utf8.ValidString(fileItem.FileName) {
+						fileList.Add(fileItem)
+					} else {
+						log.Println("Hey bra, you cannot have non-utf8 encoded file names")
+					}
 				}
 			case event.IsRename():
 				fileIndex.Remove(name)
