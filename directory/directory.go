@@ -8,6 +8,7 @@ import(
 	"os"
 	"time"
 	"sync"
+	"unicode/utf8"
 	"sync/atomic"
 	"path/filepath"
 	"sandwich-go/fileindex"
@@ -104,7 +105,11 @@ func BuildFileList(filePath, dir string) []*fileindex.FileItem {
 				log.Println(err)
 				continue
 			}
-			fileList = append(fileList, fileItem)
+			if utf8.ValidString(fileItem.FileName) {
+				fileList = append(fileList, fileItem)
+			} else {
+				log.Println("Hey bra, you cannot have non-utf8 encoded file names")
+			}
 		}
 	}
 	return fileList
