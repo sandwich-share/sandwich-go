@@ -2,7 +2,7 @@ package fileindex
 
 import(
 	"net"
-	"encoding/xml"
+	"encoding/json"
 	"log"
 )
 
@@ -12,17 +12,17 @@ func NewFileManifest() FileManifest {
 	return make(FileManifest)
 }
 
-func UnmarshalManifest(data []byte) FileManifest {
+func UnmarshalManifest(data []byte) (FileManifest, error) {
 	var manifest FileManifest
-	err := xml.Unmarshal(data, &manifest)
+	err := json.Unmarshal(data, &manifest)
 	if err != nil {
-		log.Println(err)
+		return nil, err
 	}
-	return manifest
+	return manifest, err
 }
 
 func (man FileManifest) Marshal() []byte {
-	data, err := xml.Marshal(man)
+	data, err := json.Marshal(&man)
 	if err != nil {
 		log.Println(err)
 	}

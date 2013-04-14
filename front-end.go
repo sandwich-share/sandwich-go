@@ -121,7 +121,7 @@ func InitializeUserThread() {
 			}
 		}
 	}()
-	file, err := os.Open(ConfPath("manifest-cache.xml"))
+	file, err := os.Open(ConfPath("manifest-cache.json"))
 	if err != nil && os.IsNotExist(err) {
 		BuildFileManifest()
 	} else if err != nil {
@@ -131,8 +131,10 @@ func InitializeUserThread() {
 		log.Println(err)
 		BuildFileManifest()
 		file.Close()
+	} else if FileManifest, err = fileindex.UnmarshalManifest(xml); err != nil {
+		FileManifest = fileindex.NewFileManifest()
+		BuildFileManifest()
 	} else {
-		FileManifest = fileindex.UnmarshalManifest(xml)
 		CleanManifest()
 		file.Close()
 	}
