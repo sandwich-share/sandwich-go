@@ -2,16 +2,16 @@ package main
 
 import (
 	"github.com/toqueteos/webbrowser"
+	"io/ioutil"
 	"log"
 	"net"
+	"os"
 	"regexp"
+	"sandwich-go/fileindex"
 	"sort"
 	"strings"
 	"sync/atomic"
 	"time"
-	"os"
-	"io/ioutil"
-	"sandwich-go/fileindex"
 )
 
 type IPFilePair struct {
@@ -143,4 +143,3 @@ func InitializeUserThread() {
 		webbrowser.Open("http://localhost:" + Settings.LocalServerPort)
 	}
 }
-
