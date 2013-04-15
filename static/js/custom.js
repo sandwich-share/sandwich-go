@@ -92,24 +92,27 @@
 })(window.jQuery);
 
 //Custom JS code to do some stuff
-$(document).ready(function(){
+$(window).load(function(){
+	var query_result_template = _.template($("#results_template").html())
 	var start;
 	var gotall = false;
 	var loading = false;
+	var step = 100;
 	$("#query_form").on("submit", function(e) {
 		start = 0;
 		gotall = false;
 		loading = false;
 		e.preventDefault();
 		$.ajax({
+			dataType: "json",
 			url: "/search",
 			data: {search:
 			$(this).find("input[type=text]").val(),
 			regex: $(this).find("input[name=regex]").is(":checked"),
-			start: 0}, 
+			start: 0, step: step}, 
 			success: function(data){
-				if (data.length < 100) { gotall = true }
-				$("#file_list").html(data);
+				if (data.length < step) { gotall = true }
+				$("#file_list").html(query_result_template({data: data}));
 				$("#loading").hide()
 				add_dl_listeners();
 			},
@@ -125,22 +128,22 @@ $(document).ready(function(){
 		}
 		return false;
 	});
-	$(window).scroll(function() {
-		if (!loading && !gotall && $(window).scrollTop() >= $(document).height() - $(window).height() - 30) {
-			loading = true;
-			start += 100;
-			$.get("/search", {start: start}, function(data){
-				loading = false;
-				if (data.length < 100) { gotall = true }
-				$("#file_list").append(data);
-				add_dl_listeners();
-			});
-		}
-	});
 	add_dl_listeners = function(){ $(".dl-link").on("click", function(e) {
 		e.preventDefault();
 		$.get("/download", {ip: $(this).attr("data-ip"), file: $(this).attr("data-file")});
 		$(".top-right").notify({message: {text: "Download started..."}}).show();
 	})}
+	$(window).scroll(function() {
+		if (!loading && !gotall && $(window).scrollTop() >= $(document).height() - $(window).height() - 30) {
+			loading = true;
+			start += step;
+			$.getJSON("/search", {start: start, step: step}, function(data){
+				loading = false;
+				if (data.length < 100) { gotall = true }
+				$("#file_list").append(query_result_template({data: data}));
+				add_dl_listeners();
+			});
+		}
+	});
 })
 

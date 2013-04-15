@@ -4,7 +4,17 @@
         <title>Sandwich File Sharing</title>
         <script type="text/javascript" src="/static/js/jquery.js"></script>
         <script type="text/javascript" src="/static/js/bootstrap.js"></script>
+        <script type="text/javascript" src="/static/js/underscore.js"></script>
         <script type="text/javascript" src="/static/js/custom.js"></script>
+        <script type="text/template" id="results_template">
+          <% _.each(data, function(file) { %>
+            <tr>
+              <td><%= file['IP'] %></td>
+              <td><a href="http://<%=file['IP']%><%=file['Port']%>/files/<%=file['FileName']%>"><%= file['FileName'] %></a></td>
+              <td><a href="#" class="dl-link" data-ip="<%=file['IP']%>" data-file="<%=file['FileName']%>">Download</a></td>
+            </tr>
+          <% }); %>
+        </script>
         <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.css">
         <link rel="stylesheet" type="text/css" href="/static/css/custom.css">
     </head>

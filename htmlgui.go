@@ -2,24 +2,20 @@ package main
 
 import (
 	"fmt"
-	"html/template"
 	"net"
 	"net/http"
 	"strconv"
+	"encoding/json"
 )
 
-var templates = template.Must(template.ParseFiles("templates/index.html", "templates/query_result.html"))
-
 var cache []*IPFilePair
-
-func homeHandler(w http.ResponseWriter, r *http.Request) {
-	templates.ExecuteTemplate(w, "index.html", nil)
-}
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
 	search := r.FormValue("search")
 	regex := r.FormValue("regex") == "true"
 	start, _ := strconv.Atoi(r.FormValue("start"))
+	var step int
+	step, _ = strconv.Atoi(r.FormValue("step"))
 	if start == 0 {
 		var err error
 		cache, err = Search(search, regex)
@@ -27,23 +23,33 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "Invalid regex")
 		}
 	}
-	end := start + 100
-	if (len(cache) - 1) < end {
-		end = len(cache) - 1
+	var end int
+	if step != 0 {
+		end = start + step
+		if (len(cache) - 1) < end {
+			end = len(cache) - 1
+		}
+	} else {
+		end = len(cache)-1
 	}
 	if start > len(cache)-1 {
 		fmt.Fprintf(w, "")
 	} else {
-		templates.ExecuteTemplate(w, "query_result.html", cache[start:end])
+		json_res, _ := json.Marshal(cache[start:end])
+		w.Write(json_res)
 	}
 }
 
 func downloadHandler(w http.ResponseWriter, r *http.Request) {
-	DownloadQueue <- &IPFilePair{IP: net.ParseIP(r.FormValue("ip")), FileName: r.FormValue("file")}
+	DownloadQueue <- &IPFilePair{IP: NetIP(net.ParseIP(r.FormValue("ip"))), FileName: r.FormValue("file")}
 }
 
 func killHandler(w http.ResponseWriter, r *http.Request) {
 	Shutdown()
+}
+
+func homeHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "static/index.html")
 }
 
 func InitializeFancyStuff() {
