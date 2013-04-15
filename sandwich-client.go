@@ -40,7 +40,7 @@ func Get(address net.IP, extension string) ([]byte, error) {
 		return nil, err
 	}
 	request.Header = map[string][]string{
-		"Accept-Encoding": {"gzip, deflate"},
+		"Accept-Encoding": {"gzip"},
 	}
 	err = request.Write(conn)
 	if err != nil {

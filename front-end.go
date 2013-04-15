@@ -2,22 +2,29 @@ package main
 
 import (
 	"github.com/toqueteos/webbrowser"
+	"io/ioutil"
 	"log"
 	"net"
+	"os"
 	"regexp"
+	"sandwich-go/fileindex"
 	"sort"
 	"strings"
 	"sync/atomic"
 	"time"
-	"os"
-	"io/ioutil"
-	"sandwich-go/fileindex"
+	"encoding/json"
 )
 
+type NetIP net.IP
+
 type IPFilePair struct {
-	IP       net.IP
+	IP       NetIP
 	Port     string
 	FileName string
+}
+
+func (ip NetIP) MarshalJSON() ([]byte, error) {
+	return json.Marshal(net.IP(ip).String())
 }
 
 type IPFilePairs []*IPFilePair
@@ -66,7 +73,7 @@ func ManifestMap() IPFilePairs {
 		ip := net.ParseIP(ipString)
 		port := GetPort(ip)
 		for _, fileItem := range tempFileList.List {
-			fileList = append(fileList, &IPFilePair{ip, port, fileItem.FileName})
+			fileList = append(fileList, &IPFilePair{NetIP(ip), port, fileItem.FileName})
 		}
 	}
 	timeOut = time.AfterFunc(time.Minute, func() {
@@ -113,7 +120,7 @@ func InitializeUserThread() {
 			select {
 			case filePair := <-DownloadQueue:
 				log.Println("Downloading file:" + filePair.FileName)
-				err := DownloadFile(filePair.IP, filePair.FileName)
+				err := DownloadFile(net.IP(filePair.IP), filePair.FileName)
 				if err != nil {
 					log.Println(err)
 				}
@@ -143,4 +150,3 @@ func InitializeUserThread() {
 		webbrowser.Open("http://localhost:" + Settings.LocalServerPort)
 	}
 }
-

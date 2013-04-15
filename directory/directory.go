@@ -108,7 +108,7 @@ func BuildFileList(filePath, dir string) []*fileindex.FileItem {
 			if utf8.ValidString(fileItem.FileName) {
 				fileList = append(fileList, fileItem)
 			} else {
-				log.Println("Hey bra, you cannot have non-utf8 encoded file names")
+				log.Printf("%s is not properly utf-8 encoded", fileItem.FileName)
 			}
 		}
 	}
