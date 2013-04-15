@@ -81,12 +81,12 @@ func TestBlacklistRange(t *testing.T) {
 	shouldBe := new(BlackWhiteList)
 	bwlist.BlacklistRange(&IPRange{net.ParseIP("129.22.0.0"), net.ParseIP("129.22.0.1")})
 	bwlist.BlacklistRange(&IPRange{net.ParseIP("129.22.0.3"), net.ParseIP("129.22.0.3")})
-	shouldBe.Blacklist = []*IPRange{&IPRange{net.ParseIP("129.22.0.0"), net.ParseIP("129.22.0.1")}, &IPRange{net.ParseIP("129.22.0.3"), net.ParseIP("129.22.0.3")}}
+	shouldBe.blacklist = []*IPRange{&IPRange{net.ParseIP("129.22.0.0"), net.ParseIP("129.22.0.1")}, &IPRange{net.ParseIP("129.22.0.3"), net.ParseIP("129.22.0.3")}}
 	if !bwlist.Equal(shouldBe) {
 		t.Errorf("Does not add disjoint ranges correctly.\nWanted:\n%sGot:\n%s", shouldBe.String(), bwlist.String())
 	}
 	bwlist.BlacklistRange(&IPRange{net.ParseIP("129.22.0.4"), net.ParseIP("129.22.0.5")})
-	shouldBe.Blacklist = []*IPRange{&IPRange{net.ParseIP("129.22.0.0"), net.ParseIP("129.22.0.1")}, &IPRange{net.ParseIP("129.22.0.3"), net.ParseIP("129.22.0.5")}}
+	shouldBe.blacklist = []*IPRange{&IPRange{net.ParseIP("129.22.0.0"), net.ParseIP("129.22.0.1")}, &IPRange{net.ParseIP("129.22.0.3"), net.ParseIP("129.22.0.5")}}
 	if !bwlist.Equal(shouldBe) {
 		t.Errorf("Does not add consecutive ranges correctly.\nWanted:\n%sGot:\n%s", shouldBe.String(), bwlist.String())
 	}
@@ -96,7 +96,7 @@ func TestBlacklistRange(t *testing.T) {
 	bwlist.BlacklistRange(&IPRange{net.ParseIP("129.22.0.9"), net.ParseIP("129.22.0.10")})
 	fmt.Println(bwlist)
 	bwlist.BlacklistRange(&IPRange{net.ParseIP("129.22.0.2"), net.ParseIP("129.22.0.8")})
-	shouldBe.Blacklist = []*IPRange{&IPRange{net.ParseIP("129.22.0.0"), net.ParseIP("129.22.0.10")}}
+	shouldBe.blacklist = []*IPRange{&IPRange{net.ParseIP("129.22.0.0"), net.ParseIP("129.22.0.10")}}
 	if !bwlist.Equal(shouldBe) {
 		t.Errorf("Does not add multiple ranges correctly.\nWanted:\n%sGot:\n%s", shouldBe.String(), bwlist.String())
 	}
