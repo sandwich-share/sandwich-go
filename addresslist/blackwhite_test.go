@@ -2,6 +2,7 @@ package addresslist
 
 import(
 	"testing"
+	"fmt"
 	"net"
 )
 
@@ -18,7 +19,7 @@ func TestHas(t *testing.T) {
 	}
 }
 
-func Testremove(t *testing.T) {
+func TestRemove(t *testing.T) {
 	iprangeList := make([]*IPRange, 0, 1)
 	iprangeList = append(iprangeList, &IPRange{net.ParseIP("129.22.0.0"), net.ParseIP("129.22.0.1")})
 	iprangeList = append(iprangeList, &IPRange{net.ParseIP("129.22.0.3"), net.ParseIP("129.22.0.4")})
@@ -35,6 +36,69 @@ func Testremove(t *testing.T) {
 	iprangeList = remove(iprangeList, len(iprangeList) - 1)
 	if !iprangeList[0].Start.Equal(net.ParseIP("129.22.0.6")) || len(iprangeList) != 1 {
 		t.Errorf("did not remove last element correctly")
+	}
+}
+
+func TestInc(t *testing.T) {
+	ipA := net.ParseIP("129.22.0.0")
+	ipB := net.ParseIP("129.22.0.1")
+	ipA = Inc(ipA)
+	if !ipB.Equal(ipA) {
+		t.Error("Expected: " + ipB.String() + " Got: " + ipA.String())
+	}
+	ipA = net.ParseIP("129.0.255.255")
+	ipB = net.ParseIP("129.1.0.0")
+	ipA = Inc(ipA)
+	if !ipB.Equal(ipA) {
+		t.Error("Expected: " + ipB.String() + " Got: " + ipA.String())
+	}
+	ipA = net.ParseIP("255.255.255.255")
+	ipB = net.ParseIP("::1:0:0:0")
+	ipA = Inc(ipA)
+	if !ipB.Equal(ipA) {
+		t.Error("Expected: " + ipB.String() + " Got: " + ipA.String())
+	}
+}
+
+func TestShouldCombine(t *testing.T) {
+	rangeA := &IPRange{net.ParseIP("129.22.0.3"), net.ParseIP("129.22.0.3")}
+	rangeB := &IPRange{net.ParseIP("129.22.0.4"), net.ParseIP("129.22.0.5")}
+	if !rangeA.shouldCombine(rangeB) {
+		t.Errorf("Expected: true, recieved: false")
+	}
+	if rangeB.shouldCombine(rangeA) {
+		t.Errorf("Expected: false, recieved: true")
+	}
+	rangeA = &IPRange{net.ParseIP("129.22.0.1"), net.ParseIP("129.22.0.4")}
+	rangeB = &IPRange{net.ParseIP("129.22.0.2"), net.ParseIP("129.22.0.5")}
+	if !rangeA.shouldCombine(rangeB) {
+		t.Errorf("Expected: true, recieved: false")
+	}
+}
+
+func TestBlacklistRange(t *testing.T) {
+	bwlist := new(BlackWhiteList)
+	shouldBe := new(BlackWhiteList)
+	bwlist.BlacklistRange(&IPRange{net.ParseIP("129.22.0.0"), net.ParseIP("129.22.0.1")})
+	bwlist.BlacklistRange(&IPRange{net.ParseIP("129.22.0.3"), net.ParseIP("129.22.0.3")})
+	shouldBe.Blacklist = []*IPRange{&IPRange{net.ParseIP("129.22.0.0"), net.ParseIP("129.22.0.1")}, &IPRange{net.ParseIP("129.22.0.3"), net.ParseIP("129.22.0.3")}}
+	if !bwlist.Equal(shouldBe) {
+		t.Errorf("Does not add disjoint ranges correctly.\nWanted:\n%sGot:\n%s", shouldBe.String(), bwlist.String())
+	}
+	bwlist.BlacklistRange(&IPRange{net.ParseIP("129.22.0.4"), net.ParseIP("129.22.0.5")})
+	shouldBe.Blacklist = []*IPRange{&IPRange{net.ParseIP("129.22.0.0"), net.ParseIP("129.22.0.1")}, &IPRange{net.ParseIP("129.22.0.3"), net.ParseIP("129.22.0.5")}}
+	if !bwlist.Equal(shouldBe) {
+		t.Errorf("Does not add consecutive ranges correctly.\nWanted:\n%sGot:\n%s", shouldBe.String(), bwlist.String())
+	}
+	fmt.Println(bwlist)
+	bwlist.BlacklistRange(&IPRange{net.ParseIP("129.22.0.7"), net.ParseIP("129.22.0.7")})
+	fmt.Println(bwlist)
+	bwlist.BlacklistRange(&IPRange{net.ParseIP("129.22.0.9"), net.ParseIP("129.22.0.10")})
+	fmt.Println(bwlist)
+	bwlist.BlacklistRange(&IPRange{net.ParseIP("129.22.0.2"), net.ParseIP("129.22.0.8")})
+	shouldBe.Blacklist = []*IPRange{&IPRange{net.ParseIP("129.22.0.0"), net.ParseIP("129.22.0.10")}}
+	if !bwlist.Equal(shouldBe) {
+		t.Errorf("Does not add multiple ranges correctly.\nWanted:\n%sGot:\n%s", shouldBe.String(), bwlist.String())
 	}
 }
 

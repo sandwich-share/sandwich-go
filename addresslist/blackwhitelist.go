@@ -7,7 +7,7 @@ import(
 )
 
 func Inc(address net.IP) net.IP {
-	addressCopy = make(net.IP, 0, len(address))
+	addressCopy := make(net.IP, len(address))
 	copy(addressCopy, address)
 	return inc(addressCopy)
 }
@@ -26,6 +26,10 @@ type IPRange struct {
 	End net.IP
 }
 
+func (pair *IPRange) String() string {
+	return pair.Start.String() + " to " + pair.End.String()
+}
+
 func (pair *IPRange) Equal(newRange *IPRange) bool {
 	return pair.Start.Equal(newRange.Start) && pair.End.Equal(newRange.End)
 }
@@ -34,8 +38,8 @@ func (pair *IPRange) Has(address net.IP) bool {
 	return !IPLess(address, pair.Start) && !IPLess(pair.End, address)
 }
 
-func (pair *IPRange) shouldCombine(newRange *IPRange) {
-	return pair.Has(newRange.Start) || pair.End.Equal(Inc(newRange.Start))
+func (pair *IPRange) shouldCombine(newRange *IPRange) bool {
+	return pair.Has(newRange.Start) || newRange.Start.Equal(Inc(pair.End))
 }
 
 type BlackWhiteList struct {
@@ -75,6 +79,18 @@ func (list *BlackWhiteList) Equal(newList *BlackWhiteList) bool {
 		}
 	}
 	return true
+}
+
+func (list *BlackWhiteList) String() string {
+	retVal := "Whitelist:\n"
+	for _, elem := range list.Whitelist {
+		retVal += elem.String() + "\n"
+	}
+	retVal += "BlackList:\n"
+	for _, elem := range list.Blacklist {
+		retVal += elem.String() + "\n"
+	}
+	return retVal
 }
 
 func (list *BlackWhiteList) Marshal() []byte {
@@ -117,7 +133,7 @@ func (list *BlackWhiteList) BlacklistRange(newRange *IPRange) {
 		if iprange.shouldCombine(newRange) {
 			if IPGreater(newRange.End, iprange.End) {
 				iprange.End = newRange.End
-				for i++; i < len(list.Blacklist); i++ {
+				for i++; i < len(list.Blacklist); {
 					if iprange.shouldCombine(list.Blacklist[i]) {
 						if IPLess(iprange.End, list.Blacklist[i].End) {
 							iprange.End = list.Blacklist[i].End
@@ -136,7 +152,7 @@ func (list *BlackWhiteList) BlacklistRange(newRange *IPRange) {
 			iprange.Start = newRange.Start
 			if IPGreater(newRange.End, iprange.End) {
 				iprange.End = newRange.End
-				for i++; i < len(list.Blacklist); i++ {
+				for i++; i < len(list.Blacklist); {
 					if iprange.shouldCombine(list.Blacklist[i]) {
 						if IPLess(iprange.End, list.Blacklist[i].End) {
 							iprange.End = list.Blacklist[i].End
@@ -156,10 +172,11 @@ func (list *BlackWhiteList) BlacklistRange(newRange *IPRange) {
 	for i, iprange := range list.Blacklist {
 		if IPLess(newRange.End, iprange.Start) {
 			temp := make([]*IPRange, len(list.Blacklist[i:]))
-			copy(temp, Blacklist[i:])
+			copy(temp, list.Blacklist[i:])
 			list.Blacklist = append(append(list.Blacklist[:i], newRange), temp...)
 			return
 		}
 	}
+	list.Blacklist = append(list.Blacklist, newRange)
 }
 
