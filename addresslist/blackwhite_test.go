@@ -76,6 +76,23 @@ func TestShouldCombine(t *testing.T) {
 	}
 }
 
+func TestOK(t *testing.T) {
+	bwlist := NewBWList([]*IPRange{&IPRange{net.ParseIP("129.22.0.0"), net.ParseIP("129.22.0.10")}, &IPRange{net.ParseIP("129.22.1.0"), net.ParseIP("129.22.1.10")}})
+	bwlist.BlacklistRange(&IPRange{net.ParseIP("129.22.0.4"), net.ParseIP("129.22.0.5")})
+	ip := net.ParseIP("129.22.0.3")
+	if !bwlist.OK(ip) {
+		t.Errorf(ip.String() + " should have been included")
+	}
+	ip = net.ParseIP("129.22.0.4")
+	if bwlist.OK(ip) {
+		t.Errorf(ip.String() + " should not have been included")
+	}
+	ip = net.ParseIP("129.22.1.0")
+	if !bwlist.OK(ip) {
+		t.Errorf(ip.String() + " should have been included")
+	}
+}
+
 func TestBlacklistRange(t *testing.T) {
 	bwlist := new(BlackWhiteList)
 	shouldBe := new(BlackWhiteList)
