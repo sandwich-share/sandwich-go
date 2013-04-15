@@ -21,6 +21,7 @@ import (
 var AddressList *addresslist.SafeIPList //Thread safe
 var AddressSet *addresslist.AddressSet	//Thread safe
 var FileIndex *fileindex.SafeFileList	//Thread safe
+var BlackWhiteList *addresslist.BlackWhiteList //Thread safe
 var FileManifest fileindex.FileManifest //NOT THREAD SAFE
 var ManifestLock = new(sync.Mutex)
 var IsCleanManifest int32
@@ -197,7 +198,21 @@ func main() {
 
 	AddressSet = addresslist.NewAddressSet()
 	FileManifest = fileindex.NewFileManifest()
-	err := InitializePaths()
+	file, err := os.Open(ConfPath("blackwhitelist.xml"))
+	if err != nil && os.IsNotExist(err) {
+		BlackWhiteList = addresslist.NewBWList([]*addresslist.IPRange{&addresslist.IPRange{net.ParseIP("129.22.0.0"), net.ParseIP("129.22.255.255")},
+			&addresslist.IPRange{net.ParseIP("173.241.224.0"), net.ParseIP("173.241.239.255")}})
+	} else if data, err := ioutil.ReadAll(file); err != nil  {
+		BlackWhiteList = addresslist.NewBWList([]*addresslist.IPRange{&addresslist.IPRange{net.ParseIP("129.22.0.0"), net.ParseIP("129.22.255.255")},
+			&addresslist.IPRange{net.ParseIP("173.241.224.0"), net.ParseIP("173.241.239.255")}})
+		file.Close()
+	} else if BlackWhiteList, err = addresslist.UnmarshalBWList(data, []*addresslist.IPRange{&addresslist.IPRange{net.ParseIP("129.22.0.0"),
+			net.ParseIP("129.22.255.255")}, &addresslist.IPRange{net.ParseIP("173.241.224.0"), net.ParseIP("173.241.239.255")}}); err != nil {
+		BlackWhiteList = addresslist.NewBWList([]*addresslist.IPRange{&addresslist.IPRange{net.ParseIP("129.22.0.0"), net.ParseIP("129.22.255.255")},
+			&addresslist.IPRange{net.ParseIP("173.241.224.0"), net.ParseIP("173.241.239.255")}})
+		file.Close()
+	}
+	err = InitializePaths()
 	if err != nil {
 		return
 	}

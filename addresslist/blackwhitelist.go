@@ -43,8 +43,10 @@ func (pair *IPRange) shouldCombine(newRange *IPRange) bool {
 	return pair.Has(newRange.Start) || newRange.Start.Equal(Inc(pair.End))
 }
 
+//NOTE: YOU SHOULD NEVER EVER ACCESS BLACKLIST DIRECTLY UNLESS YOU KNOW WHAT YOU ARE DOING
+// THE ONLY REASON THAT THIS VALUE IS EXPORTED IS FOR SERIALIZATION
 type BlackWhiteList struct {
-	whitelist, blacklist []*IPRange
+	whitelist, Blacklist []*IPRange //Blacklist is exported so that it may be serialized properly
 	m sync.RWMutex
 }
 
@@ -62,19 +64,20 @@ func NewBWList(whitelist []*IPRange) *BlackWhiteList {
 	return retVal
 }
 
-func UnmarshalBlackWhite(data []byte) (*BlackWhiteList, error) {
+func UnmarshalBWList(data []byte, list []*IPRange) (*BlackWhiteList, error) {
 	retVal := new(BlackWhiteList)
 	err := xml.Unmarshal(data, retVal)
 	if err != nil {
 		return nil, err
 	}
+	retVal.whitelist = list
 	return retVal, nil
 }
 
 //This is very useful for testing
 func (list *BlackWhiteList) Equal(newList *BlackWhiteList) bool {
 	list.m.RLock()
-	if len(list.whitelist) != len(newList.whitelist) || len(list.blacklist) != len(newList.blacklist) {
+	if len(list.whitelist) != len(newList.whitelist) || len(list.Blacklist) != len(newList.Blacklist) {
 		list.m.RUnlock()
 		return false
 	}
@@ -84,8 +87,8 @@ func (list *BlackWhiteList) Equal(newList *BlackWhiteList) bool {
 			return false
 		}
 	}
-	for i, iprange := range list.blacklist {
-		if !iprange.Equal(newList.blacklist[i]) {
+	for i, iprange := range list.Blacklist {
+		if !iprange.Equal(newList.Blacklist[i]) {
 			list.m.RUnlock()
 			return false
 		}
@@ -101,7 +104,7 @@ func (list *BlackWhiteList) String() string {
 		retVal += elem.String() + "\n"
 	}
 	retVal += "Blacklist:\n"
-	for _, elem := range list.blacklist {
+	for _, elem := range list.Blacklist {
 		retVal += elem.String() + "\n"
 	}
 	list.m.RUnlock()
@@ -132,7 +135,7 @@ func (list *BlackWhiteList) FilterList(peerlist PeerList) PeerList {
 		if !keep {
 			continue
 		}
-		for _, elem := range list.blacklist {
+		for _, elem := range list.Blacklist {
 			if elem.Has(peeritem.IP) {
 				keep = false
 				break
@@ -149,18 +152,18 @@ func (list *BlackWhiteList) FilterList(peerlist PeerList) PeerList {
 
 func (list *BlackWhiteList) BlacklistRange(newRange *IPRange) {
 	list.m.Lock()
-	for i, iprange := range list.blacklist {
+	for i, iprange := range list.Blacklist {
 		if iprange.shouldCombine(newRange) {
 			if IPGreater(newRange.End, iprange.End) {
 				iprange.End = newRange.End
-				for i++; i < len(list.blacklist); {
-					if iprange.shouldCombine(list.blacklist[i]) {
-						if IPLess(iprange.End, list.blacklist[i].End) {
-							iprange.End = list.blacklist[i].End
-							list.blacklist = remove(list.blacklist, i)
+				for i++; i < len(list.Blacklist); {
+					if iprange.shouldCombine(list.Blacklist[i]) {
+						if IPLess(iprange.End, list.Blacklist[i].End) {
+							iprange.End = list.Blacklist[i].End
+							list.Blacklist = remove(list.Blacklist, i)
 							break
 						}
-						list.blacklist = remove(list.blacklist, i)
+						list.Blacklist = remove(list.Blacklist, i)
 					} else {
 						break
 					}
@@ -173,14 +176,14 @@ func (list *BlackWhiteList) BlacklistRange(newRange *IPRange) {
 			iprange.Start = newRange.Start
 			if IPGreater(newRange.End, iprange.End) {
 				iprange.End = newRange.End
-				for i++; i < len(list.blacklist); {
-					if iprange.shouldCombine(list.blacklist[i]) {
-						if IPLess(iprange.End, list.blacklist[i].End) {
-							iprange.End = list.blacklist[i].End
-							list.blacklist = remove(list.blacklist, i)
+				for i++; i < len(list.Blacklist); {
+					if iprange.shouldCombine(list.Blacklist[i]) {
+						if IPLess(iprange.End, list.Blacklist[i].End) {
+							iprange.End = list.Blacklist[i].End
+							list.Blacklist = remove(list.Blacklist, i)
 							break
 						}
-						list.blacklist = remove(list.blacklist, i)
+						list.Blacklist = remove(list.Blacklist, i)
 					} else {
 						break
 					}
@@ -191,16 +194,16 @@ func (list *BlackWhiteList) BlacklistRange(newRange *IPRange) {
 		}
 	}
 	//If we get this far we know that range being inserted is disjoint from every other range
-	for i, iprange := range list.blacklist {
+	for i, iprange := range list.Blacklist {
 		if IPLess(newRange.End, iprange.Start) {
-			temp := make([]*IPRange, len(list.blacklist[i:]))
-			copy(temp, list.blacklist[i:])
-			list.blacklist = append(append(list.blacklist[:i], newRange), temp...)
+			temp := make([]*IPRange, len(list.Blacklist[i:]))
+			copy(temp, list.Blacklist[i:])
+			list.Blacklist = append(append(list.Blacklist[:i], newRange), temp...)
 			list.m.Unlock()
 			return
 		}
 	}
 	list.m.Unlock()
-	list.blacklist = append(list.blacklist, newRange)
+	list.Blacklist = append(list.Blacklist, newRange)
 }
 
