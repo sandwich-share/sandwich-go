@@ -80,6 +80,18 @@ func IPLess(listA, listB net.IP) bool {
 	return false
 }
 
+func IPLessEqual(listA, listB net.IP) bool {
+	return listA.Equal(listB) || IPLess(listA, listB)
+}
+
+func IPGreater(listA, listB net.IP) bool {
+	return !IPLess(listA, listB) && !listA.Equal(listB)
+}
+
+func IPGreaterEqual(listA, listB net.IP) bool {
+	return !IPLess(listA, listB)
+}
+
 func (list PeerList) Contains(ip net.IP) bool {
 	for _, entry := range(list) {
 		if entry.IP.Equal(ip) {
