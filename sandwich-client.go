@@ -19,11 +19,17 @@ import (
 	"strings"
 	"sync/atomic"
 	"time"
+	"errors"
 )
 
 var RemoveSet map[string]time.Time
 
+var IllegalIP = errors.New("The requested ip is illegal")
+
 func Get(address net.IP, extension string) ([]byte, error) {
+	if !BlackWhiteList.OK(address) {
+		return nil, IllegalIP
+	}
 	conn, err := net.DialTimeout("tcp", address.String()+GetPort(address), 2*time.Second)
 	if err != nil {
 		return nil, err
@@ -62,6 +68,9 @@ func Get(address net.IP, extension string) ([]byte, error) {
 }
 
 func DownloadFile(address net.IP, filePath string) error {
+	if !BlackWhiteList.OK(address) {
+		return IllegalIP
+	}
 	conn, err := net.DialTimeout("tcp", address.String()+GetPort(address), 2*time.Minute)
 	if err != nil {
 		return err

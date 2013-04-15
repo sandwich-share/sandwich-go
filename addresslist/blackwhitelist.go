@@ -121,30 +121,40 @@ func (list *BlackWhiteList) Marshal() []byte {
 	return data
 }
 
+func (list *BlackWhiteList) ok(address net.IP) bool {
+	keep := false
+	for _, elem := range list.whitelist {
+		if elem.Has(address) {
+			keep = true
+			break
+		}
+	}
+	if !keep {
+		return false
+	}
+	for _, elem := range list.Blacklist {
+		if elem.Has(address) {
+			keep = false
+			break
+		}
+	}
+	return keep
+}
+
+func (list *BlackWhiteList) OK(address net.IP) bool {
+	list.m.RLock()
+	ok := list.ok(address)
+	list.m.RUnlock()
+	return ok
+}
+
 func (list *BlackWhiteList) FilterList(peerlist PeerList) PeerList {
 	list.m.RLock()
 	resultlist := make(PeerList, 0, len(peerlist))
 	for _, peeritem := range peerlist {
-		keep := false
-		for _, elem := range list.whitelist {
-			if elem.Has(peeritem.IP) {
-				keep = true
-				break
-			}
+		if list.ok(peeritem.IP) {
+			resultlist = append(resultlist, peeritem)
 		}
-		if !keep {
-			continue
-		}
-		for _, elem := range list.Blacklist {
-			if elem.Has(peeritem.IP) {
-				keep = false
-				break
-			}
-		}
-		if !keep {
-			continue
-		}
-		resultlist = append(resultlist, peeritem)
 	}
 	list.m.RUnlock()
 	return resultlist

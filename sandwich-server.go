@@ -9,6 +9,18 @@ import (
 	"strings"
 )
 
+func makeBWListHandler(function http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		ip := net.ParseIP(strings.Split(req.RemoteAddr, ":")[0])
+		if !BlackWhiteList.OK(ip) {
+			log.Println("Forbid " + ip.String() + " from accessing service")
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+		} else {
+			function(w, req)
+		}
+	}
+}
+
 func pingHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 	w.Write([]byte("pong\n"))
@@ -67,10 +79,11 @@ func makeGzipHandler(fn http.HandlerFunc) http.HandlerFunc {
 
 func InitializeServer() error {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/peerlist/", makeGzipHandler(peerListHandler))
-	mux.HandleFunc("/ping/", pingHandler)
-	mux.HandleFunc("/fileindex/", makeGzipHandler(indexForHandler))
-	mux.Handle("/files/", http.StripPrefix("/files/", http.FileServer(http.Dir(SandwichPath))))
+	fileHandler, _ := http.StripPrefix("/files/", http.FileServer(http.Dir(SandwichPath))).(http.HandlerFunc)
+	mux.HandleFunc("/peerlist/", makeBWListHandler(makeGzipHandler(peerListHandler)))
+	mux.HandleFunc("/ping/", makeBWListHandler(pingHandler))
+	mux.HandleFunc("/fileindex/", makeBWListHandler(makeGzipHandler(indexForHandler)))
+	mux.HandleFunc("/files/", makeBWListHandler(fileHandler))
 
 	log.Printf("About to listen on %s.\n", GetPort(LocalIP))
 	srv := &http.Server{Handler: mux, Addr: GetPort(LocalIP)}
@@ -81,3 +94,4 @@ func InitializeServer() error {
 	}
 	return nil
 }
+
