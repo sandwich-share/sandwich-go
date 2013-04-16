@@ -198,7 +198,7 @@ func Shutdown() {
 
 func main() {
 
-	runtime.GOMAXPROCS(2)
+	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	AddressSet = addresslist.NewAddressSet()
 	FileManifest = fileindex.NewFileManifest()
