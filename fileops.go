@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"sandwich-go/addresslist"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -17,6 +18,48 @@ const ConfigDirName = "conf"
 var HomePath string
 var SandwichPath string
 var ConfigPath string
+
+type Version struct {
+	Major, Minor, Patch int
+	Commit string
+}
+
+func ParseVersion(raw string) *Version {
+	retVal := new(Version)
+	parsed := strings.Split(raw, ":")
+	retVal.Commit = parsed[1]
+	parsed = strings.Split(parsed[0], ".")
+	major, _ := strconv.ParseInt(parsed[0], 10, 32)
+	minor, _ := strconv.ParseInt(parsed[1], 10, 32)
+	retVal.Major = int(major)
+	retVal.Minor = int(minor)
+	if len(parsed) == 3 {
+		patch, _ := strconv.ParseInt(parsed[2], 10, 32)
+		retVal.Patch = int(patch)
+	}
+	return retVal
+}
+
+func (ver *Version) Equal(com *Version) bool {
+	return ver.Major == com.Major && ver.Minor == com.Minor && ver.Patch == com.Patch
+}
+
+func (ver *Version) Less(com *Version) bool {
+	if ver.Major < com.Major {
+		return true
+	} else if ver.Major == com.Major {
+		if ver.Minor < com.Minor {
+			return true
+		} else if ver.Minor == com.Minor && ver.Patch < com.Patch {
+			return true
+		}
+	}
+	return false
+}
+
+func (ver *Version) Greater(com *Version) bool {
+	return !ver.Less(com) && !ver.Equal(com)
+}
 
 // Quick way to make a path for a config file
 func ConfPath(newPath string) string {
@@ -57,3 +100,4 @@ func Save(list addresslist.PeerList) error {
 func MakeLocalPeerItem() *addresslist.PeerItem {
 	return &addresslist.PeerItem{LocalIP, FileIndex.IndexHash(), time.Now()}
 }
+
