@@ -104,7 +104,7 @@ func DownloadFile(address net.IP, filePath string) error {
 		file.Close()
 		return err
 	}
-	byteBuf := make([]byte, 1024)
+	byteBuf := make([]byte, 4 * 1024 * 1024)
 	for done := false; !done; {
 		numRead, err := buffer.Read(byteBuf)
 		if err == io.EOF {

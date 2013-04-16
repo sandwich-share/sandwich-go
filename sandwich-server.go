@@ -7,7 +7,28 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"sync"
+	"bytes"
 )
+
+var jsonFileIndexCache []byte
+var gzipFileIndexCache []byte
+var indexHash uint32
+var cacheLock sync.RWMutex
+
+func updateCache() {
+	cacheLock.Lock()
+	jsonFileIndexCache := FileIndex.Contents().Marshal()
+	buffer := new(bytes.Buffer)
+	gwriter := gzip.NewWriter(buffer)
+	_, err := gwriter.Write(jsonFileIndexCache)
+	gwriter.Close()
+	if err != nil {
+		log.Println(err)
+	}
+	gzipFileIndexCache = buffer.Bytes()
+	cacheLock.Unlock()
+}
 
 func makeBWListHandler(function http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
@@ -31,9 +52,20 @@ func pingHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func indexForHandler(w http.ResponseWriter, req *http.Request) {
-	w.Header().Set("Content-Type", "text/json")
-	listCopy := FileIndex.Contents()
-	w.Write(listCopy.Marshal())
+	cacheLock.RLock()
+	if indexHash != FileIndex.IndexHash() {
+		cacheLock.RUnlock()
+		updateCache()
+		cacheLock.RLock()
+	}
+	if !strings.Contains(req.Header.Get("Accept-Encoding"), "gzip") {
+		w.Header().Set("Content-Type", "text/json")
+		w.Write(jsonFileIndexCache)
+	} else {
+		w.Header().Set("Content-Encoding", "gzip")
+		w.Write(gzipFileIndexCache)
+	}
+	cacheLock.RUnlock()
 	log.Println("Sent index")
 	ip := net.ParseIP(strings.Split(req.RemoteAddr, ":")[0])
 	if !AddressList.Contains(ip) {
@@ -82,7 +114,7 @@ func InitializeServer() error {
 	fileHandler, _ := http.StripPrefix("/files/", http.FileServer(http.Dir(SandwichPath))).(http.HandlerFunc)
 	mux.HandleFunc("/peerlist/", makeBWListHandler(makeGzipHandler(peerListHandler)))
 	mux.HandleFunc("/ping/", makeBWListHandler(pingHandler))
-	mux.HandleFunc("/fileindex/", makeBWListHandler(makeGzipHandler(indexForHandler)))
+	mux.HandleFunc("/fileindex/", makeBWListHandler(indexForHandler))
 	mux.HandleFunc("/files/", makeBWListHandler(fileHandler))
 
 	log.Printf("About to listen on %s.\n", GetPort(LocalIP))
