@@ -23,3 +23,5 @@ echo "package main\n\nconst VERSION = \"$VERSION\"\n" > VERSION.go
 
 go build
 
+rm VERSION.go
+
