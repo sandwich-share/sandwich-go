@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION=$(git describe --all --always HEAD^)
+VERSION=$(git rev-parse --short HEAD)
 
 echo "package main\n\nconst VERSION = \"$VERSION\"\n" > VERSION.go
 
