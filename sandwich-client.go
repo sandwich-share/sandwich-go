@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"compress/gzip"
+	"errors"
 	"io"
 	"io/ioutil"
 	"log"
@@ -19,7 +20,6 @@ import (
 	"strings"
 	"sync/atomic"
 	"time"
-	"errors"
 )
 
 var RemoveSet map[string]time.Time
@@ -104,7 +104,7 @@ func DownloadFile(address net.IP, filePath string) error {
 		file.Close()
 		return err
 	}
-	byteBuf := make([]byte, 4 * 1024 * 1024)
+	byteBuf := make([]byte, 4*1024*1024)
 	for done := false; !done; {
 		numRead, err := buffer.Read(byteBuf)
 		if err == io.EOF {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/toqueteos/webbrowser"
 	"io/ioutil"
 	"log"
@@ -12,29 +13,28 @@ import (
 	"strings"
 	"sync/atomic"
 	"time"
-	"encoding/json"
 )
 
 type NetIP net.IP
 
 type IPFilePair struct {
-	IP			 NetIP
-	Port		 string
+	IP       NetIP
+	Port     string
 	FileName string
 }
 
 type IPFilePairs []*IPFilePair
 
 type FileOrDir struct {
-  Type int
-  Name string
+	Type int
+	Name string
 }
 
 type FileOrDirs []FileOrDir
 
 const (
-  DIR = 0
-  FILE = 1
+	DIR  = 0
+	FILE = 1
 )
 
 func (ip NetIP) MarshalJSON() ([]byte, error) {
@@ -42,41 +42,41 @@ func (ip NetIP) MarshalJSON() ([]byte, error) {
 }
 
 func makeFolders(fileList []*fileindex.FileItem) map[string]FileOrDirs {
-  r := regexp.MustCompile("/[^/]+$")
-  folders := make(map[string]FileOrDirs, 100)
-  folders[""] = make(FileOrDirs, 0, 10)
-  var last FileOrDir
-  for _, file := range fileList {
-    last = FileOrDir{FILE, file.FileName}
-    for true {
-      next_string := r.ReplaceAllString(last.Name, "")
-      if next_string == last.Name {
-        if !folders[""].Contains(last) {
-          folders[""] = append(folders[""], last)
-        }
-        break
-      }
-      next := FileOrDir{DIR, next_string}
-      if folders[next.Name] == nil {
-        folders[next.Name] = make(FileOrDirs, 0, 5)
-      }
-      if !folders[next.Name].Contains(last) {
-        folders[next.Name] = append(folders[next.Name], last)
-      }
-      last = FileOrDir{DIR, next_string}
-    }
-  }
-  return folders
+	r := regexp.MustCompile("/[^/]+$")
+	folders := make(map[string]FileOrDirs, 100)
+	folders[""] = make(FileOrDirs, 0, 10)
+	var last FileOrDir
+	for _, file := range fileList {
+		last = FileOrDir{FILE, file.FileName}
+		for true {
+			next_string := r.ReplaceAllString(last.Name, "")
+			if next_string == last.Name {
+				if !folders[""].Contains(last) {
+					folders[""] = append(folders[""], last)
+				}
+				break
+			}
+			next := FileOrDir{DIR, next_string}
+			if folders[next.Name] == nil {
+				folders[next.Name] = make(FileOrDirs, 0, 5)
+			}
+			if !folders[next.Name].Contains(last) {
+				folders[next.Name] = append(folders[next.Name], last)
+			}
+			last = FileOrDir{DIR, next_string}
+		}
+	}
+	return folders
 }
 
 func (fods FileOrDirs) Contains(fod1 FileOrDir) bool {
-  s := fod1.Name
-  for _, fod := range fods {
-    if fod.Name == s {
-      return true
-    }
-  }
-  return false
+	s := fod1.Name
+	for _, fod := range fods {
+		if fod.Name == s {
+			return true
+		}
+	}
+	return false
 }
 
 var DownloadQueue chan *IPFilePair
@@ -111,7 +111,6 @@ func (filter FolderFilter) Filter(toCompare IPFilePair) bool {
 	regex := regexp.MustCompile(regex_string)
 	return (&regex).MatchString(string(toCompare.FileName))
 }
-
 
 func (filter *RegexFilter) Filter(toCompare IPFilePair) bool {
 	regex := regexp.Regexp(*filter)

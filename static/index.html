@@ -35,6 +35,11 @@
           <span id="loading" style="display:none">Loading...</span>
         </script>
         <script type="text/template" id="peer_results_template">
+          <% if (typeof path != 'undefined' && path != '') { %>
+            <tr>
+              <td><a href="#" class="folder-link" data-ip="<%=ip%>" data-port="<%=port%>" data-folder="<%=path.replace(/\/?[^/]+$/,'')%>">..</a></td>
+            </tr>
+          <% } %>
           <% _.each(data, function(file) { %>
             <tr>
               <% if (file['Type']===0) { %>
