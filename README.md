@@ -9,6 +9,10 @@ A client for Sandwich, written in Go.
 
 Sandwich is a distributed file-sharing application which operates entirely over HTTP/HTTPS. The current canonical implementation is in Go, but other implementations are welcomed and encouraged, as long as they are interoperable with other clients through the spec below.
 
+# To Build
+
+1. go get
+2. ./build.sh
 
 # Sandwich Spec
 
