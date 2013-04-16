@@ -10,9 +10,14 @@ if ($args.count -gt 0) {
 }
 
 if ($RELEASE -eq 0) {
+    echo "Building local version"
 	$VERSION += ":"+$GITVER
+} else {
+    echo "Building release version"
 }
 
 echo "package main`n`nconst VERSION = `"$VERSION`"`n" | Out-File -Encoding "ascii" VERSION.go
 
 go build
+
+rm VERSION.go
