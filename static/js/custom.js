@@ -93,11 +93,62 @@
 
 //Custom JS code to do some stuff
 $(window).load(function(){
-	var query_result_template = _.template($("#results_template").html())
+	var query_result_template = _.template($("#search_results_template").html())
+	var peer_list_template = _.template($("#peer_list_template").html())
+	var peer_results_template = _.template($("#peer_results_template").html())
+	var peer
 	var start;
 	var gotall = false;
 	var loading = false;
 	var step = 100;
+	var ip;
+	var port;
+	var path;
+	$.getJSON("/peers", {}, function(data) {
+		$("#peers").html(peer_list_template({data: data}));
+		$(".peer-link").on("click", function(e) {
+			e.preventDefault();
+			ip = $(this).attr("data-ip");
+			port = $(this).attr("data-port");
+			start = 0;
+			gotall = false;
+			loading = false;
+			path = "";
+			$.ajax({
+				dataType: "json",
+				url: "/peer", 
+				data: {peer: ip, path: path, start: start, step: step}, 
+				success: function(data) {
+					if (data.length < 100) { gotall = true }
+					$("#peer_folder_list").html(peer_results_template({data: data, ip: ip, port: port}));
+					$("#loading").hide()
+					add_dl_listeners();
+					add_folder_listeners();
+				},
+				beforeSend: function(data) {
+					$("#content").html($("#peer_template").html());
+					$("#peer_folder_list").html("");
+					$("#loading").show();
+				}
+				});
+		})
+	});
+	add_folder_listeners = function() { $(".folder-link").on("click", function(e) {
+		e.preventDefault();
+		ip = $(this).attr("data-ip")
+		port = $(this).attr("data-port")
+		start = 0;
+		gotall = false;
+		loading = false;
+		path = $(this).attr("data-folder")
+		$.getJSON("/peer", {peer: ip, path: path, start: start, step: step}, function(data) {
+			if (data.length < 100) { gotall = true }
+			$("#peer_folder_list").html(peer_results_template({data: data, ip: ip, port: port}));
+			add_dl_listeners();
+			add_folder_listeners();
+		});
+	});
+	}
 	$("#query_form").on("submit", function(e) {
 		start = 0;
 		gotall = false;
@@ -109,7 +160,7 @@ $(window).load(function(){
 			data: {search:
 			$(this).find("input[type=text]").val(),
 			regex: $(this).find("input[name=regex]").is(":checked"),
-			start: 0, step: step}, 
+			start: start, step: step}, 
 			success: function(data){
 				if (data.length < step) { gotall = true }
 				$("#file_list").html(query_result_template({data: data}));
@@ -117,6 +168,7 @@ $(window).load(function(){
 				add_dl_listeners();
 			},
 			beforeSend: function(){
+				$("#content").html($("#search_template").html())
 				$("#file_list").html("");
 				$("#loading").show();
 			}});
@@ -130,19 +182,29 @@ $(window).load(function(){
 	});
 	add_dl_listeners = function(){ $(".dl-link").on("click", function(e) {
 		e.preventDefault();
-		$.get("/download", {ip: $(this).attr("data-ip"), file: $(this).attr("data-file")});
+		$.get("/download", {ip: $(this).attr("data-ip"), file: $(this).attr("data-file"), type: $(this).attr("data-type")});
 		$(".top-right").notify({message: {text: "Download started..."}}).show();
 	})}
 	$(window).scroll(function() {
 		if (!loading && !gotall && $(window).scrollTop() >= $(document).height() - $(window).height() - 30) {
 			loading = true;
 			start += step;
-			$.getJSON("/search", {start: start, step: step}, function(data){
-				loading = false;
-				if (data.length < 100) { gotall = true }
-				$("#file_list").append(query_result_template({data: data}));
-				add_dl_listeners();
-			});
+			if ($("#file_list").length) {
+				$.getJSON("/search", {start: start, step: step}, function(data){
+					loading = false;
+					if (data.length < 100) { gotall = true }
+					$("#file_list").append(query_result_template({data: data}));
+					add_dl_listeners();
+				});
+			} else if ($("#peer_folder_list").length) {
+				$.getJSON("/peer", {start: start, step: step, peer: ip, path: path}, function(data){
+					loading = false;
+					if (data.length < 100) { gotAll = true }
+					$("#peer_folder_list").append(peer_results_template({data: data, ip: ip, port: port}));
+					add_dl_listeners();
+					add_folder_listeners();
+				});
+			}
 		}
 	});
 })
