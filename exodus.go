@@ -27,6 +27,9 @@ var ManifestLock = new(sync.Mutex)
 var IsCleanManifest int32
 var LocalIP net.IP
 var Settings *settings.Settings
+var Whitelist = []*addresslist.IPRange{&addresslist.IPRange{net.ParseIP("129.22.0.0"), net.ParseIP("129.22.255.255")},
+	&addresslist.IPRange{net.ParseIP("173.241.224.0"), net.ParseIP("173.241.239.255")},
+	&addresslist.IPRange{net.ParseIP("127.0.0.0"), net.ParseIP("127.255.255.255")}}
 
 func InitializeAddressList() error {
 	err := GetLocalIP()
@@ -200,19 +203,16 @@ func main() {
 	AddressSet = addresslist.NewAddressSet()
 	FileManifest = fileindex.NewFileManifest()
 	file, err := os.Open(ConfPath("blackwhitelist.xml"))
-	if err != nil && os.IsNotExist(err) {
-		BlackWhiteList = addresslist.NewBWList([]*addresslist.IPRange{&addresslist.IPRange{net.ParseIP("129.22.0.0"), net.ParseIP("129.22.255.255")},
-			&addresslist.IPRange{net.ParseIP("173.241.224.0"), net.ParseIP("173.241.239.255")}})
-	} else if data, err := ioutil.ReadAll(file); err != nil  {
-		BlackWhiteList = addresslist.NewBWList([]*addresslist.IPRange{&addresslist.IPRange{net.ParseIP("129.22.0.0"), net.ParseIP("129.22.255.255")},
-			&addresslist.IPRange{net.ParseIP("173.241.224.0"), net.ParseIP("173.241.239.255")}})
+	if err != nil {
+		BlackWhiteList = addresslist.NewBWList(Whitelist)
+	} else if data, err := ioutil.ReadAll(file); err != nil {
 		file.Close()
-	} else if BlackWhiteList, err = addresslist.UnmarshalBWList(data, []*addresslist.IPRange{&addresslist.IPRange{net.ParseIP("129.22.0.0"),
-			net.ParseIP("129.22.255.255")}, &addresslist.IPRange{net.ParseIP("173.241.224.0"), net.ParseIP("173.241.239.255")}}); err != nil {
-		BlackWhiteList = addresslist.NewBWList([]*addresslist.IPRange{&addresslist.IPRange{net.ParseIP("129.22.0.0"), net.ParseIP("129.22.255.255")},
-			&addresslist.IPRange{net.ParseIP("173.241.224.0"), net.ParseIP("173.241.239.255")}})
+		BlackWhiteList = addresslist.NewBWList(Whitelist)
+	} else if BlackWhiteList, err = addresslist.UnmarshalBWList(data, Whitelist); err != nil {
 		file.Close()
+		BlackWhiteList = addresslist.NewBWList(Whitelist)
 	}
+
 	err = InitializePaths()
 	if err != nil {
 		return
