@@ -106,8 +106,11 @@ func InitializePaths() error {
 		return err
 	}
 	HomePath = usr.HomeDir
-	SandwichPath = filepath.Join(HomePath, SandwichDirName)
-	ConfigPath = ConfigDirName
+	if Settings.SandwichDirName != "" {
+		SandwichPath = Settings.SandwichDirName
+	} else {
+		SandwichPath = filepath.Join(HomePath, SandwichDirName)
+	}
 	_, err = os.Stat(SandwichPath)
 	if err != nil && os.IsNotExist(err) {
 		err = os.MkdirAll(SandwichPath, os.ModePerm)
@@ -116,19 +119,6 @@ func InitializePaths() error {
 			return err
 		}
 		log.Println("Created: " + SandwichPath)
-		return nil
-	} else if err != nil {
-		log.Fatal(err)
-		return err
-	}
-	_, err = os.Stat(ConfigPath)
-	if err != nil && os.IsNotExist(err) {
-		err = os.MkdirAll(ConfigPath, os.ModePerm)
-		if err != nil {
-			log.Fatal(err)
-			return err
-		}
-		log.Println("Created: " + ConfigPath)
 		return nil
 	} else if err != nil {
 		log.Fatal(err)
@@ -148,21 +138,6 @@ func InitializeSettings() error {
 		Settings.LocalServerPort = "9001"
 	}
 	Settings.Save()
-	if Settings.SandwichDirName != "" {
-		SandwichPath = Settings.SandwichDirName
-		_, err = os.Stat(SandwichPath)
-		if err != nil && os.IsNotExist(err) {
-			err = os.MkdirAll(SandwichPath, os.ModePerm)
-			if err != nil {
-				log.Fatal(err)
-				return err
-			}
-			log.Println("Created: " + SandwichPath)
-		} else if err != nil {
-			log.Fatal(err)
-			return err
-		}
-	}
 	return nil
 }
 
@@ -205,6 +180,17 @@ func main() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
+	ConfigPath = ConfigDirName //We need our conf directory to do anything else
+	_, err := os.Stat(ConfigPath)
+	if err != nil && os.IsNotExist(err) {
+		err = os.MkdirAll(ConfigPath, os.ModePerm)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println("Created: " + ConfigPath)
+	} else if err != nil {
+		log.Fatal(err)
+	}
 	AddressSet = addresslist.NewAddressSet()
 	FileManifest = fileindex.NewFileManifest()
 	file, err := os.Open(ConfPath("blackwhitelist.xml"))
@@ -218,11 +204,11 @@ func main() {
 		BlackWhiteList = addresslist.NewBWList(Whitelist)
 	}
 
-	err = InitializePaths()
+	err = InitializeSettings()
 	if err != nil {
 		return
 	}
-	err = InitializeSettings()
+	err = InitializePaths()
 	if err != nil {
 		return
 	}
@@ -249,3 +235,4 @@ func main() {
 		return
 	}
 }
+
