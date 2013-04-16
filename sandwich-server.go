@@ -18,7 +18,9 @@ var cacheLock sync.RWMutex
 
 func updateCache() {
 	cacheLock.Lock()
-	jsonFileIndexCache := FileIndex.Contents().Marshal()
+	fileList := FileIndex.Contents()
+	jsonFileIndexCache = fileList.Marshal()
+	indexHash = fileList.IndexHash
 	buffer := new(bytes.Buffer)
 	gwriter := gzip.NewWriter(buffer)
 	_, err := gwriter.Write(jsonFileIndexCache)
@@ -27,6 +29,7 @@ func updateCache() {
 		log.Println(err)
 	}
 	gzipFileIndexCache = buffer.Bytes()
+	log.Println("Updated cache")
 	cacheLock.Unlock()
 }
 
@@ -54,6 +57,7 @@ func pingHandler(w http.ResponseWriter, req *http.Request) {
 func indexForHandler(w http.ResponseWriter, req *http.Request) {
 	cacheLock.RLock()
 	if indexHash != FileIndex.IndexHash() {
+		log.Println("Need to update cache")
 		cacheLock.RUnlock()
 		updateCache()
 		cacheLock.RLock()
