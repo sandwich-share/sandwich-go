@@ -313,6 +313,7 @@ func CleanManifest() {
 		if ok && (entry.IndexHash == fileIndex.IndexHash || fileIndex.TimeStamp.After(entry.LastSeen)) {
 			continue
 		} else {
+			log.Println("Updated entry")
 			index, err := GetFileIndex(entry.IP)
 			if err != nil {
 				continue

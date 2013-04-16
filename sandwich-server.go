@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 )
 
 var jsonFileIndexCache []byte
@@ -19,6 +20,7 @@ var cacheLock sync.RWMutex
 func updateCache() {
 	cacheLock.Lock()
 	fileList := FileIndex.Contents()
+	fileList.TimeStamp = time.Now()
 	jsonFileIndexCache = fileList.Marshal()
 	indexHash = fileList.IndexHash
 	buffer := new(bytes.Buffer)

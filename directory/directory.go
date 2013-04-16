@@ -141,9 +141,10 @@ func StartWatch(dir string, fileIndex *fileindex.SafeFileList) {
 			mutex.Lock()
 			lock.Wait()
 			for update := false; update; update = !atomic.CompareAndSwapInt32(&okToUpdate, 0, 1) {
-				time.Sleep(5 * time.Second)
+				time.Sleep(1 * time.Second)
 			}
 			fileIndex.UpdateHash()
+			mutex.Unlock()
 		}
 	}()
 
