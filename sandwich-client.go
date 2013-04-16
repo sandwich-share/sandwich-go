@@ -130,7 +130,7 @@ func DownloadFile(address net.IP, filePath string) error {
 }
 
 func GetFileIndex(address net.IP) (*fileindex.FileList, error) {
-	resp, err := Get(address, "/fileindex/")
+	resp, err := Get(address, "/fileindex")
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -199,7 +199,7 @@ func BuildFileManifest() {
 }
 
 func GetPeerList(address net.IP) (addresslist.PeerList, error) {
-	resp, err := Get(address, "/peerlist/")
+	resp, err := Get(address, "/peerlist")
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -276,7 +276,7 @@ func UpdateAddressList(newList addresslist.PeerList) {
 }
 
 func Ping(address net.IP) bool {
-	resp, err := Get(address, "/ping/")
+	resp, err := Get(address, "/ping")
 	if err != nil {
 		log.Println(err)
 		return false

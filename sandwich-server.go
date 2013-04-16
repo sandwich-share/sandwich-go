@@ -112,9 +112,9 @@ func makeGzipHandler(fn http.HandlerFunc) http.HandlerFunc {
 func InitializeServer() error {
 	mux := http.NewServeMux()
 	fileHandler, _ := http.StripPrefix("/files/", http.FileServer(http.Dir(SandwichPath))).(http.HandlerFunc)
-	mux.HandleFunc("/peerlist/", makeBWListHandler(makeGzipHandler(peerListHandler)))
-	mux.HandleFunc("/ping/", makeBWListHandler(pingHandler))
-	mux.HandleFunc("/fileindex/", makeBWListHandler(indexForHandler))
+	mux.HandleFunc("/peerlist", makeBWListHandler(makeGzipHandler(peerListHandler)))
+	mux.HandleFunc("/ping", makeBWListHandler(pingHandler))
+	mux.HandleFunc("/fileindex", makeBWListHandler(indexForHandler))
 	mux.HandleFunc("/files/", makeBWListHandler(fileHandler))
 
 	log.Printf("About to listen on %s.\n", GetPort(LocalIP))
