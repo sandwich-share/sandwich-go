@@ -6,7 +6,48 @@
         <script type="text/javascript" src="/static/js/bootstrap.js"></script>
         <script type="text/javascript" src="/static/js/underscore.js"></script>
         <script type="text/javascript" src="/static/js/custom.js"></script>
-        <script type="text/template" id="results_template">
+        <script type="text/tempate" id="search_template">
+          <table class='table'>
+            <thead>
+              <tr>
+                <th>IP</th>
+                <th>Filename</th>
+                <th>Sandwich Download</th>
+              </tr>
+            </thead>
+            <tbody id="file_list">
+            </tbody>
+          </table>
+          <span id="loading" style="display:none">Loading...</span>
+        </script>
+        <script type="text/template" id="peer_template">
+          <table class='table'
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>File/Folder</th>
+                <th>Sandwich Download</th>
+              </tr>
+            </thead>
+            <tbody id="peer_folder_list">
+            </tbody>
+          </table>
+          <span id="loading" style="display:none">Loading...</span>
+        </script>
+        <script type="text/template" id="peer_results_template">
+          <% _.each(data, function(file) { %>
+            <tr>
+              <% if (file['Type']===0) { %>
+                <td><a href="#" class="folder-link" data-ip="<%=ip%>" data-port="<%=port%>" data-folder="<%=file['Name']%>"><%= file['Name'] %></a></td>
+              <% } else { %>
+                <td><a href="http://<%=ip%><%=port%>/files/<%=file['Name']%>"><%= file['Name'] %></a></td>
+              <% } %>
+              <td><%= file['Type']===0 ? "Folder" : "File" %></td>
+              <td><a href="#" class="dl-link" data-ip="<%=ip%>" data-file="<%=file['Name']%>" data-type="<%=file['Type']%>">Download</a></td>
+            </tr>
+          <% }); %>
+        </script>
+        <script type="text/template" id="search_results_template">
           <% _.each(data, function(file) { %>
             <tr>
               <td><%= file['IP'] %></td>
@@ -14,6 +55,15 @@
               <td><a href="#" class="dl-link" data-ip="<%=file['IP']%>" data-file="<%=file['FileName']%>">Download</a></td>
             </tr>
           <% }); %>
+        </script>
+        <script type="text/template" id="peer_list_template">
+          <table>
+            <% _.each(data, function(peer) { %>
+              <tr>
+                <td><a href="#" class="peer-link" data-ip="<%=peer['IP']%>" data-port="<%=peer['Port']%>"><%= peer['IP'] %></a></td>
+              </tr>
+            <% }); %>
+          </table>
         </script>
         <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.css">
         <link rel="stylesheet" type="text/css" href="/static/css/custom.css">
@@ -33,19 +83,9 @@
         </div>
         <div id="everything" class="container">
             <div class="row">
-                <div id="content" class="span12">
-                  <table class='table'>
-                    <thead>
-                      <tr>
-                        <th>IP</th>
-                        <th>Filename</th>
-                        <th>Sandwich Download</th>
-                      </tr>
-                    </thead>
-                    <tbody id="file_list">
-                    </tbody>
-                  </table>
-                  <span id="loading" style="display:none">Loading...</span>
+                <div id="peers" class="span2">
+                </div>
+                <div id="content" class="span10">
                 </div>
             </div>
         </div>
