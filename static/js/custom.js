@@ -143,7 +143,7 @@ $(window).load(function(){
 		path = $(this).attr("data-folder")
 		$.getJSON("/peer", {peer: ip, path: path, start: start, step: step}, function(data) {
 			if (data.length < 100) { gotall = true }
-			$("#peer_folder_list").html(peer_results_template({data: data, ip: ip, port: port}));
+			$("#peer_folder_list").html(peer_results_template({data: data, ip: ip, port: port, path: path}));
 			add_dl_listeners();
 			add_folder_listeners();
 		});
