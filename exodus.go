@@ -178,6 +178,8 @@ func Shutdown() {
 
 func main() {
 
+	log.Println(VERSION)
+
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	ConfigPath = ConfigDirName //We need our conf directory to do anything else

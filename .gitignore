@@ -28,6 +28,9 @@ log
 # The binary
 sandwich-go
 
+# Version file
+VERSION.go
+
 # config files
 peerlist
 *.xml

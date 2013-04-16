@@ -139,6 +139,14 @@ func GetFileIndex(address net.IP) (*fileindex.FileList, error) {
 	return fileList, err
 }
 
+func GetVersion(address net.IP) (string, error) {
+	resp, err := Get(address, "/version")
+	if err != nil {
+		log.Println(err)
+	}
+	return strings.Split(string(resp), "\n")[0], err
+}
+
 func getFileIndexLoop(in chan net.IP, out chan fileindex.FileManifest) {
 	resultSet := fileindex.NewFileManifest()
 	for ip := range in {

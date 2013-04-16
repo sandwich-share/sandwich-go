@@ -45,6 +45,11 @@ func makeBWListHandler(function http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+func versionHandler(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("Content-Type", "text/plain")
+	w.Write([]byte(VERSION + "\n"))
+}
+
 func pingHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 	w.Write([]byte("pong\n"))
@@ -115,11 +120,12 @@ func makeGzipHandler(fn http.HandlerFunc) http.HandlerFunc {
 
 func InitializeServer() error {
 	mux := http.NewServeMux()
-	fileHandler, _ := http.StripPrefix("/files/", http.FileServer(http.Dir(SandwichPath))).(http.HandlerFunc)
+
 	mux.HandleFunc("/peerlist", makeBWListHandler(makeGzipHandler(peerListHandler)))
 	mux.HandleFunc("/ping", makeBWListHandler(pingHandler))
 	mux.HandleFunc("/fileindex", makeBWListHandler(indexForHandler))
-	mux.HandleFunc("/files/", makeBWListHandler(fileHandler))
+	mux.HandleFunc("/version", versionHandler)
+	mux.Handle("/files/", http.StripPrefix("/files/", http.FileServer(http.Dir(SandwichPath))).(http.HandlerFunc))
 
 	log.Printf("About to listen on %s.\n", GetPort(LocalIP))
 	srv := &http.Server{Handler: mux, Addr: GetPort(LocalIP)}
