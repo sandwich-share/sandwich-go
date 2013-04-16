@@ -113,21 +113,26 @@ func Search(query string, regex bool) (IPFilePairs, error) {
 	return fileList, nil
 }
 
-func InitializeUserThread() {
-	DownloadQueue = make(chan *IPFilePair, 1000)
-	go func() {
-		for {
-			select {
-			case filePair := <-DownloadQueue:
-				log.Println("Downloading file:" + filePair.FileName)
-				err := DownloadFile(net.IP(filePair.IP), filePair.FileName)
-				if err != nil {
-					log.Println(err)
-				}
-				log.Println("Downloading complete")
+func downloadThread() {
+	for {
+		select {
+		case filePair := <-DownloadQueue:
+			log.Println("Downloading file:" + filePair.FileName)
+			err := DownloadFile(net.IP(filePair.IP), filePair.FileName)
+			if err != nil {
+				log.Println(err)
 			}
+			log.Println("Downloading complete")
 		}
-	}()
+	}
+}
+
+func InitializeUserThread() {
+	go downloadThread()
+	go downloadThread()
+	go downloadThread()
+	go downloadThread()
+	DownloadQueue = make(chan *IPFilePair, 1000)
 	file, err := os.Open(ConfPath("manifest-cache.json"))
 	if err != nil && os.IsNotExist(err) {
 		BuildFileManifest()
