@@ -9,7 +9,6 @@ import(
 	"time"
 	"sync"
 	"unicode/utf8"
-	"sync/atomic"
 	"path/filepath"
 	"sandwich-go/fileindex"
 	"code.google.com/p/go.exp/fsnotify"
@@ -135,15 +134,13 @@ func StartWatch(dir string, fileIndex *fileindex.SafeFileList) {
 
 	mutex := new(sync.Mutex)
 	lock := sync.NewCond(mutex)
-	var okToUpdate int32 = 0
 	go func() {
 		for {
 			mutex.Lock()
 			lock.Wait()
-			for update := false; update; update = !atomic.CompareAndSwapInt32(&okToUpdate, 0, 1) {
-				time.Sleep(1 * time.Second)
-			}
 			fileIndex.UpdateHash()
+			log.Println("Updated hash")
+			time.Sleep(1 * time.Second)
 			mutex.Unlock()
 		}
 	}()
@@ -187,7 +184,6 @@ func StartWatch(dir string, fileIndex *fileindex.SafeFileList) {
 			case event.IsRename():
 				fileIndex.Remove(name)
 			}
-			atomic.CompareAndSwapInt32(&okToUpdate, 1, 0)
 			lock.Signal()
 		}
 		log.Println("Watch loop exited")
