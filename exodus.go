@@ -18,23 +18,23 @@ import (
 	"sync"
 )
 
-var AddressList *addresslist.SafeIPList //Thread safe
-var AddressSet *addresslist.AddressSet	//Thread safe
-var FileIndex *fileindex.SafeFileList	//Thread safe
+var AddressList *addresslist.SafeIPList        //Thread safe
+var AddressSet *addresslist.AddressSet         //Thread safe
+var FileIndex *fileindex.SafeFileList          //Thread safe
 var BlackWhiteList *addresslist.BlackWhiteList //Thread safe
-var FileManifest fileindex.FileManifest //NOT THREAD SAFE
+var FileManifest fileindex.FileManifest        //NOT THREAD SAFE
 var ManifestLock = new(sync.Mutex)
 var IsCleanManifest int32
 var LocalIP net.IP
 var Settings *settings.Settings
 var Whitelist = []*addresslist.IPRange{&addresslist.IPRange{net.ParseIP("129.22.0.0"), net.ParseIP("129.22.255.255")}, // CWRUNET
 	&addresslist.IPRange{net.ParseIP("173.241.224.0"), net.ParseIP("173.241.239.255")}, // Hessler
-	&addresslist.IPRange{net.ParseIP("127.0.0.0"), net.ParseIP("127.255.255.255")}, // IPv4 Subnet
-	&addresslist.IPRange{net.ParseIP("192.5.109.0"), net.ParseIP("192.5.109.255")}, // CWRUNET-C0
-	&addresslist.IPRange{net.ParseIP("192.5.110.0"), net.ParseIP("192.5.110.255")}, // CWRUNET-C1
-	&addresslist.IPRange{net.ParseIP("192.5.111.0"), net.ParseIP("192.5.111.255")}, // CWRUNET-C2
-	&addresslist.IPRange{net.ParseIP("192.5.112.0"), net.ParseIP("192.5.112.255")}, // CWRUNET-C3
-	&addresslist.IPRange{net.ParseIP("192.5.113.0"), net.ParseIP("192.5.113.255")}} // CWRUNET-C4
+	&addresslist.IPRange{net.ParseIP("127.0.0.0"), net.ParseIP("127.255.255.255")},     // IPv4 Subnet
+	&addresslist.IPRange{net.ParseIP("192.5.109.0"), net.ParseIP("192.5.109.255")},     // CWRUNET-C0
+	&addresslist.IPRange{net.ParseIP("192.5.110.0"), net.ParseIP("192.5.110.255")},     // CWRUNET-C1
+	&addresslist.IPRange{net.ParseIP("192.5.111.0"), net.ParseIP("192.5.111.255")},     // CWRUNET-C2
+	&addresslist.IPRange{net.ParseIP("192.5.112.0"), net.ParseIP("192.5.112.255")},     // CWRUNET-C3
+	&addresslist.IPRange{net.ParseIP("192.5.113.0"), net.ParseIP("192.5.113.255")}}     // CWRUNET-C4
 
 func InitializeAddressList() error {
 	err := GetLocalIP()
@@ -237,4 +237,3 @@ func main() {
 		return
 	}
 }
-

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"compress/gzip"
 	"io"
 	"log"
@@ -8,7 +9,6 @@ import (
 	"net/http"
 	"strings"
 	"sync"
-	"bytes"
 )
 
 var jsonFileIndexCache []byte
@@ -136,4 +136,3 @@ func InitializeServer() error {
 	}
 	return nil
 }
-
