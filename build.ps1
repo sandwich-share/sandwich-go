@@ -1,6 +1,6 @@
 $GITVER = git rev-parse --short HEAD
 
-$VERSION = "0.9"
+$VERSION = "1.0"
 
 $RELEASE = 0
 if ($args.count -gt 0) {
