@@ -4,10 +4,16 @@ VERSION=0.9
 
 LOCAL_BUILD="true"
 
+UPDATE="false"
+
 if [ $# -gt 0 ]; then
 	if [ $1 = "release" ]
 	then
 		LOCAL_BUILD=-1
+	fi
+	if [ $1 = "update" ]
+	then
+		UPDATE="true"
 	fi
 fi
 
@@ -21,7 +27,13 @@ fi
 
 echo "package main\n\nconst VERSION = \"$VERSION\"\n" > VERSION.go
 
-go build
+if [ $UPDATE = "true" ]
+then
+	echo "Updating dependencies"
+	go get
+else
+	go build
+fi
 
 rm VERSION.go
 
