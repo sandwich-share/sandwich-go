@@ -20,6 +20,19 @@ type Settings struct {
 	DontOpenBrowserOnStart bool
 }
 
+func (settings *Settings) Clone() *Settings {
+	retVal := new(Settings)
+	retVal.PingUntilFoundOnStart = settings.PingUntilFoundOnStart
+	retVal.WriteLogToScreen = settings.WriteLogToScreen
+	retVal.LoopOnEmpty = settings.LoopOnEmpty
+	retVal.DoNotBootStrap = settings.DoNotBootStrap
+	retVal.CheckSumMaxSize = settings.CheckSumMaxSize
+	retVal.SandwichDirName = settings.SandwichDirName
+	retVal.LocalServerPort = settings.LocalServerPort
+	retVal.DontOpenBrowserOnStart = settings.DontOpenBrowserOnStart
+	return retVal
+}
+
 func (settings *Settings) Save() error {
 	data, err := xml.MarshalIndent(settings, "", "  ")
 	if err != nil {
