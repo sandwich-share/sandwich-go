@@ -107,6 +107,15 @@ $(window).load(function(){
 	$.get("/version", {}, function(data) {
 		$("#version").html(data);
 	});
+  $.getJSON("/settings", {}, function(data) {
+    $("#localport").val(data["LocalServerPort"]);
+    $("#dirname").val(data["SandwichDirName"]);
+    if (data["DontOpenBrowserOnStart"]) {
+      $("#openbrowser").removeAttr("checked");
+    } else {
+      $("#openbrowser").attr("checked", "checked");
+    }
+  });
 	$.getJSON("/peers", {}, function(data) {
 		$("#peers").html(peer_list_template({data: data}));
 		$(".peer-link").on("click", function(e) {
@@ -136,6 +145,12 @@ $(window).load(function(){
 				});
 		})
 	});
+	$("#save_settings").on("click", function() {
+		$.post("/settings", {localport: $("#localport").val(),
+			dirname: $("#dirname").val(),
+			openbrowser: $("#openbrowser").is(":checked")});
+    $("#settingsModal").modal('hide');
+  });
 	add_folder_listeners = function() { $(".folder-link").on("click", function(e) {
 		e.preventDefault();
 		ip = $(this).attr("data-ip")

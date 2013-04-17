@@ -74,26 +74,50 @@
         <link rel="stylesheet" type="text/css" href="/static/css/custom.css">
     </head>
     <body>
-        <h1>What's in the Sandwich?</h1>
-        <div class="notifications top-right"></div>
-        <div id="controls" class="container">
+      <!-- Modal -->
+      <div id="settingsModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <h3 id="settingsModalLabel">Settings</h3>
+        </div>
+        <div class="modal-body">
           <button class="btn" type="button" id="killbtn">Kill</button>
-          <span id="version"></span>
-          <form action="/search" id="query_form">
-            <div class="input-append">
-              <label><input type="checkbox" name="regex">Regex Search</label>
-              <input type="text" name="search" placeholder="Search...">
-              <input type="submit" value="Submit" class="btn">
-            </div>
-          </form>
+          <br />
+          <label>Local Server Port</label>
+          <input type="text" id="localport">
+          <br />
+          <label>Sandwich Directory Name</label>
+          <input type="text" id="dirname">
+          <br />
+          <label>Open Browser on Startup</label>
+          <input type="checkbox" id="openbrowser">
         </div>
-        <div id="everything" class="container">
-            <div class="row">
-                <div id="peers" class="span2">
-                </div>
-                <div id="content" class="span10">
-                </div>
-            </div>
+        <div class="modal-footer">
+          <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+          <button class="btn btn-primary" id="save_settings">Save changes</button>
         </div>
+      </div>
+      <h1>What's in the Sandwich?</h1>
+      <div class="notifications top-right"></div>
+      <div id="controls" class="container">
+        <!-- Button to trigger modal -->
+        <a href="#settingsModal" role="button" class="btn" data-toggle="modal">Settings</a>
+        <span id="version"></span>
+        <form action="/search" id="query_form">
+          <div class="input-append">
+            <label><input type="checkbox" name="regex">Regex Search</label>
+            <input type="text" name="search" placeholder="Search...">
+            <input type="submit" value="Submit" class="btn">
+          </div>
+        </form>
+      </div>
+      <div id="everything" class="container">
+        <div class="row">
+          <div id="peers" class="span2">
+          </div>
+          <div id="content" class="span10">
+          </div>
+        </div>
+      </div>
     </body>
 </html>

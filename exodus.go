@@ -172,7 +172,6 @@ func Shutdown() {
 	if err != nil {
 		log.Println(err)
 	}
-	Settings.Save()
 	os.Exit(0)
 }
 

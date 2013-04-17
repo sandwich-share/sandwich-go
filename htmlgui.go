@@ -124,6 +124,22 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "static/index.html")
 }
 
+func settingsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		dirname := r.FormValue("dirname")
+		localport := r.FormValue("localport")
+		dontopenbrowser := r.FormValue("openbrowser") == "false"
+		new_settings := Settings
+		new_settings.SandwichDirName = dirname
+		new_settings.LocalServerPort = localport
+		new_settings.DontOpenBrowserOnStart = dontopenbrowser
+		new_settings.Save()
+	} else {
+		json_res, _ := json.Marshal(Settings)
+		w.Write(json_res)
+	}
+}
+
 func InitializeFancyStuff() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", homeHandler)
@@ -133,7 +149,8 @@ func InitializeFancyStuff() {
 	mux.HandleFunc("/download", downloadHandler)
 	mux.HandleFunc("/version", localVersionHandler)
 	mux.HandleFunc("/kill", killHandler)
+	mux.HandleFunc("/settings", settingsHandler)
 	mux.Handle("/static/", http.FileServer(http.Dir("./")))
-  srv := &http.Server{Handler: mux, Addr: "localhost:" + Settings.LocalServerPort}
+	srv := &http.Server{Handler: mux, Addr: "localhost:" + Settings.LocalServerPort}
 	srv.ListenAndServe()
 }
