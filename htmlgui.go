@@ -6,6 +6,8 @@ import (
 	"net"
 	"net/http"
 	"strconv"
+	"sync/atomic"
+	"time"
 )
 
 var cache IPFilePairs
@@ -51,6 +53,11 @@ func peerHandler(w http.ResponseWriter, r *http.Request) {
 	peer_ip := r.FormValue("peer")
 	path := r.FormValue("path")
 	if peerCacheIP != peer_ip {
+		ManifestLock.Lock()
+		if timeOut == nil || !timeOut.Stop() {
+			CleanManifest()
+		}
+		atomic.StoreInt32(&IsCleanManifest, 1) //Manifest is clean keep it clean
 		x := FileManifest[peer_ip]
 		if x != nil {
 			peerCache = makeFolders(x.List)
@@ -59,6 +66,10 @@ func peerHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "[]")
 			return
 		}
+		timeOut = time.AfterFunc(time.Minute, func() {
+			atomic.StoreInt32(&IsCleanManifest, 0) //Timed out let the Manifest get dirty
+		})
+		ManifestLock.Unlock()
 	}
 	step, _ := strconv.Atoi(r.FormValue("step"))
 	start, _ := strconv.Atoi(r.FormValue("start"))
