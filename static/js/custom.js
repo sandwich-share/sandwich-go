@@ -104,6 +104,9 @@ $(window).load(function(){
 	var ip;
 	var port;
 	var path;
+	$.get("/version", {}, function(data) {
+		$("#version").html(data);
+	});
 	$.getJSON("/peers", {}, function(data) {
 		$("#peers").html(peer_list_template({data: data}));
 		$(".peer-link").on("click", function(e) {

@@ -21,7 +21,7 @@ var ConfigPath string
 
 type Version struct {
 	Major, Minor, Patch int
-	Commit string
+	Commit              string
 }
 
 func ParseVersion(raw string) *Version {
@@ -100,4 +100,3 @@ func Save(list addresslist.PeerList) error {
 func MakeLocalPeerItem() *addresslist.PeerItem {
 	return &addresslist.PeerItem{LocalIP, FileIndex.IndexHash(), time.Now()}
 }
-

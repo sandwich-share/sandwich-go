@@ -112,6 +112,10 @@ func downloadHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func localVersionHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, VERSION)
+}
+
 func killHandler(w http.ResponseWriter, r *http.Request) {
 	Shutdown()
 }
@@ -127,6 +131,7 @@ func InitializeFancyStuff() {
 	mux.HandleFunc("/peer", peerHandler)
 	mux.HandleFunc("/peers", peersHandler)
 	mux.HandleFunc("/download", downloadHandler)
+	mux.HandleFunc("/version", localVersionHandler)
 	mux.HandleFunc("/kill", killHandler)
 	mux.Handle("/static/", http.FileServer(http.Dir("./")))
 	srv := &http.Server{Handler: mux, Addr: ":" + Settings.LocalServerPort}
