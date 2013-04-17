@@ -134,6 +134,6 @@ func InitializeFancyStuff() {
 	mux.HandleFunc("/version", localVersionHandler)
 	mux.HandleFunc("/kill", killHandler)
 	mux.Handle("/static/", http.FileServer(http.Dir("./")))
-	srv := &http.Server{Handler: mux, Addr: ":" + Settings.LocalServerPort}
+  srv := &http.Server{Handler: mux, Addr: "localhost:" + Settings.LocalServerPort}
 	srv.ListenAndServe()
 }
