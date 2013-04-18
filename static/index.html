@@ -5,6 +5,7 @@
         <script type="text/javascript" src="/static/js/jquery.js"></script>
         <script type="text/javascript" src="/static/js/bootstrap.js"></script>
         <script type="text/javascript" src="/static/js/underscore.js"></script>
+        <script type="text/javascript" src="/static/js/bootstrap-notify.js"></script>
         <script type="text/javascript" src="/static/js/custom.js"></script>
         <script type="text/tempate" id="search_template">
           <table class='table'>
@@ -65,7 +66,7 @@
           <table>
             <% _.each(data, function(peer) { %>
               <tr>
-                <td><a href="#" class="peer-link" data-ip="<%=peer['IP']%>" data-port="<%=peer['Port']%>"><%= peer['IP'] %></a></td>
+                <td><a href="#" class="peer-link" data-folder="" data-ip="<%=peer['IP']%>" data-port="<%=peer['Port']%>"><%= peer['IP'] %></a></td>
               </tr>
             <% }); %>
           </table>
