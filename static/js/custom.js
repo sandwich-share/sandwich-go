@@ -25,16 +25,21 @@ $(window).load(function(){
 			$("#openbrowser").attr("checked", "checked");
 		}
 	});
-	$.getJSON("/peers", {}, function(data) {
-		$("#peers").html(peer_list_template({data: data}));
-		$(".peer-link").on("click", function(e) {
-			e.preventDefault();
-			$("#content").html($("#peer_template").html());
-			$("#peer_folder_list").html("");
-			$("#loading").show();
-			get_peer_folders(this);
+	update_peers = function(){
+		$.getJSON("/peers", {}, function(data) {
+			data = _.sortBy(data, function(x){return x["IP"]});
+			$("#peers").html(peer_list_template({data: data}));
 		})
-	});
+	}
+	update_peers();
+	setInterval(update_peers, 10000);
+	$(".peer-link").on("click", function(e) {
+		e.preventDefault();
+		$("#content").html($("#peer_template").html());
+		$("#peer_folder_list").html("");
+		$("#loading").show();
+		get_peer_folders(this);
+	})
 	//Saves the settings
 	$("#save_settings").on("click", function() {
 		$.post("/settings", {localport: $("#localport").val(),
