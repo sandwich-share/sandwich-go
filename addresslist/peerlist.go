@@ -40,6 +40,11 @@ func (item *PeerItem) UnmarshalJSON(jsonItem []byte) error {
 	return err
 }
 
+//This is useful for testing
+func (item *PeerItem) Equal(newItem *PeerItem) bool {
+    return item.IP.Equal(newItem.IP) && item.IndexHash == item.IndexHash && item.LastSeen.Equal(newItem.LastSeen)
+}
+
 func Unmarshal(jsonList []byte) PeerList {
 	var list PeerList
 	err := json.Unmarshal(jsonList, &list)
@@ -59,6 +64,18 @@ func (list PeerList) Marshal() []byte {
 
 func (list PeerList) Len() int {
 	return len(list)
+}
+
+func (list PeerList) Equal(newList PeerList) bool {
+    if list.Len() != newList.Len() {
+        return false
+    }
+    for i := range list {
+        if list[i] != newList[i] {
+            return false
+        }
+    }
+    return true
 }
 
 func IPLess(listA, listB net.IP) bool {

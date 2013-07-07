@@ -6,14 +6,14 @@ import(
   "time"
 )
 
-func dummyItem(hash uint32) *PeerItem {
-    return &PeerItem{net.ParseIP("0.0.0.0"), hash, makeTime(1, 1, 1)}
+func dummyItem(a, b, c, d byte) *PeerItem {
+    return &PeerItem{net.IPv4(a, b, c, d), 0, makeTime(1, 1, 1)}
 }
 
 func dummyPeerList(hashes ...uint32) PeerList {
     list := make(PeerList, len(hashes))
     for _, elem := range hashes {
-        list = append(list, dummyItem(elem))
+        list = append(list, dummyItem(0, 0, 0, byte(elem)))
     }
     return list
 }
@@ -84,4 +84,31 @@ func TestIPLess(t *testing.T) {
 	if IPLess(ip1, ip1) {
 		t.Errorf(ip1.String() + " < " + ip1.String() + "should return false, but returned true")
 	}
+}
+
+func TestLess(t *testing.T) {
+    list := PeerList{dummyItem(255, 0, 0, 0), dummyItem(254, 0, 0, 0), dummyItem(254, 0, 0, 1)}
+    if !list.Less(0, 1) {
+        t.Errorf("255 is not less than 254");
+    }
+    if list.Less(1, 0) {
+        t.Errorf("254 is less than 255")
+    }
+    if list.Less(1, 2) {
+        t.Errorf("0 is less than 1")
+    }
+}
+
+func TestSwap(t *testing.T) {
+    list := dummyPeerList(1, 2, 3, 4)
+    shouldBe := dummyPeerList(1, 3, 2, 4)
+    list.Swap(1, 2)
+    if !list.Equal(shouldBe) {
+        t.Errorf("The lists should be equal")
+    }
+    shouldBe = dummyPeerList(4, 3, 2, 1)
+    list.Swap(0, 3)
+    if !list.Equal(shouldBe) {
+        t.Errorf("The lists should be equal")
+    }
 }
