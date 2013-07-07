@@ -36,8 +36,8 @@ var Whitelist = []*addresslist.IPRange{&addresslist.IPRange{net.ParseIP("129.22.
 	&addresslist.IPRange{net.ParseIP("192.5.112.0"), net.ParseIP("192.5.112.255")},     // CWRUNET-C3
 	&addresslist.IPRange{net.ParseIP("192.5.113.0"), net.ParseIP("192.5.113.255")}}     // CWRUNET-C4
 
-func InitializeAddressList() error {
-	err := GetLocalIP()
+func initializeAddressList() error {
+	err := getLocalIP()
 	if err != nil {
 		log.Fatal(err)
 		return err
@@ -48,7 +48,7 @@ func InitializeAddressList() error {
 
 	if err != nil && os.IsNotExist(err) {
 		if !Settings.DoNotBootStrap {
-			BootStrap() //This bootstraps us into the network
+			bootStrap() //This bootstraps us into the network
 		} else {
 			var ipList addresslist.PeerList
 			AddressList = addresslist.New(ipList)
@@ -72,7 +72,7 @@ func InitializeAddressList() error {
 	return err
 }
 
-func GetLocalIP() error {
+func getLocalIP() error {
 	resp, err := http.Get("http://curlmyip.com")
 	if err != nil {
 		log.Println(err)
@@ -99,7 +99,7 @@ func GetLocalIP() error {
 	return nil
 }
 
-func InitializePaths() error {
+func initializePaths() error {
 	usr, err := user.Current()
 	if err != nil {
 		log.Fatal(err)
@@ -127,7 +127,7 @@ func InitializePaths() error {
 	return nil
 }
 
-func InitializeSettings() error {
+func initializeSettings() error {
 	var err error
 	settings.SettingsPath = ConfPath("settings.xml")
 	Settings, err = settings.Load()
@@ -141,22 +141,21 @@ func InitializeSettings() error {
 	return nil
 }
 
-func InitializeFileIndex() error {
+func initializeFileIndex() error {
 	FileIndex = fileindex.New(nil)
 	directory.CheckSumMaxSize = Settings.CheckSumMaxSize
 	directory.StartWatch(SandwichPath, FileIndex)
 	return nil
 }
 
-//TODO: Make a BootStrap that does something reasonable
-func BootStrap() error {
+func bootStrap() error {
 	iplist := make(addresslist.PeerList, 1)
 	var rawIP string
 	fmt.Print("Please enter an IP address for bootstrap\n=>")
 	_, err := fmt.Scanln(&rawIP)
 	if err != nil {
 		log.Println(err)
-		return BootStrap()
+		return bootStrap()
 	}
 	addrs := net.ParseIP(rawIP)
 	iplist[0] = &addresslist.PeerItem{addrs, FileIndex.IndexHash(), FileIndex.TimeStamp()}
@@ -205,19 +204,19 @@ func main() {
 		BlackWhiteList = addresslist.NewBWList(Whitelist)
 	}
 
-	err = InitializeSettings()
+	err = initializeSettings()
 	if err != nil {
 		return
 	}
-	err = InitializePaths()
+	err = initializePaths()
 	if err != nil {
 		return
 	}
-	err = InitializeFileIndex()
+	err = initializeFileIndex()
 	if err != nil {
 		return
 	}
-	err = InitializeAddressList()
+	err = initializeAddressList()
 	if err != nil {
 		return
 	}
