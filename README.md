@@ -1,6 +1,6 @@
 ##sandwich-go
 
-A client for Sandwich, written in Go.
+A client and server for Sandwich, written in Go.
 
 (previously known as "how to insert penis into sandwich", thanks Jacob).
 
@@ -11,7 +11,7 @@ Sandwich is a distributed file-sharing application which operates entirely over 
 
 # To Build
 
-1. go get
+1. ./build.sh update
 2. ./build.sh
 
 # Sandwich Spec
