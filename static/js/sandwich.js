@@ -1,16 +1,28 @@
-var app = angular.module('sandwich', ['infinite-scroll']);
+var app = angular.module('sandwich', ['infinite-scroll', '$strap.directives']);
 
-app.controller('MyCtrl', function($scope, $http, $timeout) {
+app.controller('MainCtrl', function($scope, $http, $timeout) {
   $scope.peerFiles = [];
   $scope.searchFiles = [];
   $scope.isPeerSearch = false;
   $scope.isFileSearch = false;
   $scope.loading = false;
   $scope.gotAll = false;
+  $scope.alerts = [];
   var step = 100;
   var peerIP = '';
   var peerPort = '';
   var peerPath = '';
+
+  var newAlert = function(type, title, content) {
+    $scope.alerts.push({
+      type: type,
+      title: title,
+      content: content
+    });
+    $timeout(function() {
+      $scope.alerts.shift();
+    }, 5000);
+  };
 
   //Fetch the peers on page load and then every 15 seconds TODO: Websockets
   function fetchPeers() {
