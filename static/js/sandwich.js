@@ -30,7 +30,6 @@ app.controller('MainCtrl', function($scope, $http, $timeout) {
     $http.get('/peers').success(function(data) {
       $scope.peerList = data;
     });
-    $timeout(fetchPeers, 15000);
   }
   fetchPeers(); //Making it a self executing function isn't working
 
@@ -110,16 +109,16 @@ app.controller('MainCtrl', function($scope, $http, $timeout) {
   $http.get('/settings').success(function(data) {
     $scope.settings.port = data['LocalServerPort'];
     $scope.settings.dir = data['SandwichDirName'];
-    $scope.settings.openBrowser = data['DontOpenBrowserOnStart'];
+    $scope.settings.openBrowser = !data['DontOpenBrowserOnStart'];
   });
 
   $scope.saveSettings = function() {
     console.log($scope.settings.port);
-    $http.post('/settings', {
+    $http.post('/settings', {}, {params: {
       localport: $scope.settings.port,
       dirname: $scope.settings.dir,
       openbrowser: $scope.settings.openBrowser
-    }).success(function(){
+    }}).success(function(){
       newAlert('success', undefined, 'Settings Saved');
     });
   };
