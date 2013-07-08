@@ -1,6 +1,7 @@
 package main
 
 import (
+	"code.google.com/p/go.net/websocket"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -10,14 +11,15 @@ import (
 	"time"
 )
 
-var cache IPFilePairs
-var peerCache map[string]FileOrDirs
-var peerCacheIP string
-
 type IPPort struct {
 	IP   string
 	Port string
 }
+
+var cache IPFilePairs
+var peerCache map[string]FileOrDirs
+var peerCacheIP string
+var allSockets []*websocket.Conn
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
 	search := r.FormValue("search")
@@ -151,6 +153,18 @@ func settingsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func socketHandler(ws *websocket.Conn) {
+	allSockets = append(allSockets, ws)
+	for {
+	} //Keep the socket open so other things can write to it.
+}
+
+func writeToSockets(message string) {
+	for _, s := range allSockets {
+		s.Write([]byte(message))
+	}
+}
+
 func InitializeFancyStuff() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", homeHandler)
@@ -161,6 +175,7 @@ func InitializeFancyStuff() {
 	mux.HandleFunc("/version", localVersionHandler)
 	mux.HandleFunc("/kill", killHandler)
 	mux.HandleFunc("/settings", settingsHandler)
+	mux.Handle("/socket", websocket.Handler(socketHandler))
 	mux.Handle("/static/", http.FileServer(http.Dir("./")))
 	srv := &http.Server{Handler: mux, Addr: "localhost:" + Settings.LocalServerPort}
 	srv.ListenAndServe()

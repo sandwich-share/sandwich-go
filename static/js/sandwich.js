@@ -14,6 +14,13 @@ app.controller('MainCtrl', function($scope, $http, $timeout) {
   var peerIP = '';
   var peerPort = '';
   var peerPath = '';
+  var ws = new WebSocket("ws://localhost:9001/socket");
+
+  ws.onmessage = function(message) {
+    if (message==="peers") {
+      fetchPeers();
+    }
+  };
 
   var newAlert = function(type, title, content) {
     $scope.alerts.push({
@@ -118,7 +125,6 @@ app.controller('MainCtrl', function($scope, $http, $timeout) {
   });
 
   $scope.saveSettings = function() {
-    console.log($scope.settings.port);
     $http.post('/settings', {}, {params: {
       localport: $scope.settings.port,
       dirname: $scope.settings.dir,

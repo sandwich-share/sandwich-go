@@ -27,6 +27,7 @@ var ManifestLock = new(sync.Mutex)
 var IsCleanManifest int32
 var LocalIP net.IP
 var Settings *settings.Settings
+
 //var Whitelist = []*addresslist.IPRange{&addresslist.IPRange{net.ParseIP("129.22.0.0"), net.ParseIP("129.22.255.255")}, // CWRUNET
 //	&addresslist.IPRange{net.ParseIP("173.241.224.0"), net.ParseIP("173.241.239.255")}, // Hessler
 //	&addresslist.IPRange{net.ParseIP("127.0.0.0"), net.ParseIP("127.255.255.255")},     // IPv4 Subnet
