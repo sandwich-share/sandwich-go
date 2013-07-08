@@ -9,6 +9,7 @@ app.controller('MainCtrl', function($scope, $http, $timeout) {
   $scope.gotAll = false;
   $scope.alerts = [];
   $scope.settings = {};
+  $scope.version = '';
   var step = 100;
   var peerIP = '';
   var peerPort = '';
@@ -110,6 +111,10 @@ app.controller('MainCtrl', function($scope, $http, $timeout) {
     $scope.settings.port = data['LocalServerPort'];
     $scope.settings.dir = data['SandwichDirName'];
     $scope.settings.openBrowser = !data['DontOpenBrowserOnStart'];
+  });
+
+  $http.get('/version').success(function(data) {
+    $scope.version = data;
   });
 
   $scope.saveSettings = function() {

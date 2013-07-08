@@ -42,9 +42,8 @@
       </div>
       <h1>What's in the Sandwich?</h1>
       <div id="controls" class="container">
-        <button type="button" class="btn" bs-modal="'settings.html'">
-          Settings
-        </button>
+        <button type="button" class="btn" bs-modal="'settings.html'">Settings</button>
+        <span>{{version}}</span>
         <form ng-submit="fetchSearchFiles(search,checkbox.regex)">
           <div class="input-append">
             <div class="btn-group" bs-buttons-checkbox>
