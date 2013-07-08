@@ -10,6 +10,29 @@
         <script type="text/javascript" src="/static/js/sandwich.js"></script>
         <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.css">
         <link rel="stylesheet" type="text/css" href="/static/css/sandwich.css">
+        <script type="text/ng-template" id="settings.html">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+              <h3>Settings</h3>
+            </div>
+            <div class="modal-body">
+              <button class="btn" type="button" ng-click="killServer()">Kill</button>
+              <br />
+              <label>Local Server Port</label>
+              <input type="text" ng-model="settings.port">
+              <br />
+              <label>Sandwich Directory Name</label>
+              <input type="text" ng-model="settings.dir">
+              <br />
+              <label>Open Browser on Startup</label>
+              <input type="checkbox" ng-model="settings.openBrowser">
+            </div>
+            <div class="modal-footer">
+              <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+              <button class="btn btn-primary" ng-click="saveSettings();hide()">Save changes</button>
+            </div>
+          </div>
+        </script>
     </head>
     <body>
       <div class="alerts">
@@ -19,6 +42,9 @@
       </div>
       <h1>What's in the Sandwich?</h1>
       <div id="controls" class="container">
+        <button type="button" class="btn" bs-modal="'settings.html'">
+          Settings
+        </button>
         <form ng-submit="fetchSearchFiles(search,checkbox.regex)">
           <div class="input-append">
             <div class="btn-group" bs-buttons-checkbox>

@@ -8,6 +8,7 @@ app.controller('MainCtrl', function($scope, $http, $timeout) {
   $scope.loading = false;
   $scope.gotAll = false;
   $scope.alerts = [];
+  $scope.settings = {};
   var step = 100;
   var peerIP = '';
   var peerPort = '';
@@ -96,7 +97,30 @@ app.controller('MainCtrl', function($scope, $http, $timeout) {
     }
   };
 
+  $scope.killServer = function() {
+    if (confirm("Are you sure you want to shut down?")) {
+      $http.get('/kill');
+    }
+  }
+
   $scope.downloadFile = function(ip, file, type) {
     $http.get('/download', {params: {ip: ip, file: file, type: type}});
+  };
+
+  $http.get('/settings').success(function(data) {
+    $scope.settings.port = data['LocalServerPort'];
+    $scope.settings.dir = data['SandwichDirName'];
+    $scope.settings.openBrowser = data['DontOpenBrowserOnStart'];
+  });
+
+  $scope.saveSettings = function() {
+    console.log($scope.settings.port);
+    $http.post('/settings', {
+      localport: $scope.settings.port,
+      dirname: $scope.settings.dir,
+      openbrowser: $scope.settings.openBrowser
+    }).success(function(){
+      newAlert('success', undefined, 'Settings Saved');
+    });
   };
 });
