@@ -14,12 +14,14 @@ app.controller('MainCtrl', function($scope, $http, $timeout) {
   var peerIP = '';
   var peerPort = '';
   var peerPath = '';
-  var ws = new WebSocket("ws://localhost:9001/socket");
+  var peerWS = new WebSocket("ws://localhost:9001/peerSocket");
 
-  ws.onmessage = function(message) {
-    if (message==="peers") {
-      fetchPeers();
-    }
+  peerWS.onmessage = function(event) {
+    console.log('weee');
+    console.log(event);
+    $scope.$apply(function() {
+      $scope.peerList = JSON.parse(JSON.parse(event.data));
+    });
   };
 
   var newAlert = function(type, title, content) {
@@ -32,14 +34,6 @@ app.controller('MainCtrl', function($scope, $http, $timeout) {
       $scope.alerts.shift();
     }, 5000);
   };
-
-  //Fetch the peers on page load and then every 15 seconds TODO: Websockets
-  function fetchPeers() {
-    $http.get('/peers').success(function(data) {
-      $scope.peerList = data;
-    });
-  }
-  fetchPeers(); //Making it a self executing function isn't working
 
   $scope.peerUpPath = function() {
     return peerPath.replace(/\/?[^/]+$/,'');
