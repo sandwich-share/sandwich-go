@@ -129,9 +129,9 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 
 func settingsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
-		dirname := r.FormValue("dirname")
-		localport := r.FormValue("localport")
-		dontopenbrowser := r.FormValue("openbrowser") == "false"
+		dirname := r.FormValue("dir")
+		localport := r.FormValue("port")
+		dontopenbrowser := r.FormValue("openBrowser") == "false"
 		new_settings := Settings
 		new_settings.SandwichDirName = dirname
 		new_settings.LocalServerPort = localport
