@@ -20,7 +20,6 @@ type IPPort struct {
 var cache IPFilePairs
 var peerCache map[string]FileOrDirs
 var peerCacheIP string
-var allSockets []*websocket.Conn
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
 	search := r.FormValue("search")
@@ -94,15 +93,6 @@ func peerHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func peersHandler(w http.ResponseWriter, r *http.Request) {
-	peerList := make([]IPPort, 0, 10)
-	for _, peer := range AddressList.Contents() {
-		peerList = append(peerList, IPPort{peer.IP.String(), GetPort(peer.IP)})
-	}
-	json_res, _ := json.Marshal(peerList)
-	w.Write(json_res)
-}
-
 func downloadHandler(w http.ResponseWriter, r *http.Request) {
 	var file_type int
 	ip := NetIP(net.ParseIP(r.FormValue("ip")))
@@ -140,9 +130,9 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 
 func settingsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
-		dirname := r.FormValue("dirname")
-		localport := r.FormValue("localport")
-		dontopenbrowser := r.FormValue("openbrowser") == "false"
+		dirname := r.FormValue("dir")
+		localport := r.FormValue("port")
+		dontopenbrowser := r.FormValue("openBrowser") == "false"
 		new_settings := Settings
 		new_settings.SandwichDirName = dirname
 		new_settings.LocalServerPort = localport
@@ -154,29 +144,26 @@ func settingsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func socketHandler(ws *websocket.Conn) {
-	allSockets = append(allSockets, ws)
-	for {
-	} //Keep the socket open so other things can write to it.
-}
-
-func writeToSockets(message string) {
-	for _, s := range allSockets {
-		s.Write([]byte(message))
+func writePeers() {
+	peerList := make([]IPPort, 0, 10)
+	for _, peer := range AddressList.Contents() {
+		peerList = append(peerList, IPPort{peer.IP.String(), GetPort(peer.IP)})
 	}
+	json_res, _ := json.Marshal(peerList)
+	peerHub.broadcast <- string(json_res)
 }
 
 func InitializeFancyStuff() {
+	go peerHub.run()
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", homeHandler)
 	mux.HandleFunc("/search", searchHandler)
 	mux.HandleFunc("/peer", peerHandler)
-	mux.HandleFunc("/peers", peersHandler)
 	mux.HandleFunc("/download", downloadHandler)
 	mux.HandleFunc("/version", localVersionHandler)
 	mux.HandleFunc("/kill", killHandler)
 	mux.HandleFunc("/settings", settingsHandler)
-	mux.Handle("/socket", websocket.Handler(socketHandler))
+	mux.Handle("/peerSocket", websocket.Handler(peerSocketHandler))
 	mux.Handle("/static/", http.FileServer(http.Dir("./")))
 	srv := &http.Server{Handler: mux, Addr: "localhost:" + Settings.LocalServerPort}
 	srv.ListenAndServe()
