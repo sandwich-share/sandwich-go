@@ -14,6 +14,7 @@ import (
 	"sandwich-go/directory"
 	"sandwich-go/fileindex"
 	"sandwich-go/settings"
+  "sandwich-go/client"
 	"strings"
 	"sync"
 )
@@ -222,7 +223,7 @@ func main() {
 	if err != nil {
 		return
 	}
-	go InitializeKeepAliveLoop()
+	go client.Initialize(AddressList, AddressSet, BlackWhiteList, LocalIP, Settings)
 	InitializeUserThread()
 	if !Settings.WriteLogToScreen {
 		logWriter, err := os.Create("log")

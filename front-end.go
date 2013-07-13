@@ -9,6 +9,7 @@ import (
 	"os"
 	"regexp"
 	"sandwich-go/fileindex"
+  "sandwich-go/client"
 	"sort"
 	"strings"
 	"sync/atomic"
@@ -124,7 +125,7 @@ func (filter SimpleFilter) Filter(toCompare IPFilePair) bool {
 func ManifestMap() IPFilePairs {
 	ManifestLock.Lock()
 	if timeOut == nil || !timeOut.Stop() {
-		CleanManifest()
+		FileManifest = client.CleanManifest(FileManifest)
 	}
 	atomic.StoreInt32(&IsCleanManifest, 1) //Manifest is clean keep it clean
 	fileList := make(IPFilePairs, 0, 100)
@@ -177,7 +178,7 @@ func downloadThread() {
 		select {
 		case filePair := <-DownloadQueue:
 			log.Println("Downloading file:" + filePair.FileName)
-			err := DownloadFile(net.IP(filePair.IP), filePair.FileName)
+			err := client.DownloadFile(net.IP(filePair.IP), filePair.FileName)
 			if err != nil {
 				log.Println(err)
 			}
@@ -194,19 +195,18 @@ func InitializeUserThread() {
 	DownloadQueue = make(chan *IPFilePair, 1000)
 	file, err := os.Open(ConfPath("manifest-cache.json"))
 	if err != nil && os.IsNotExist(err) {
-		BuildFileManifest()
+		FileManifest = client.BuildFileManifest()
 	} else if err != nil {
 		log.Println(err)
-		BuildFileManifest()
+		FileManifest = client.BuildFileManifest()
 	} else if xml, err := ioutil.ReadAll(file); err != nil {
 		log.Println(err)
-		BuildFileManifest()
+		FileManifest = client.BuildFileManifest()
 		file.Close()
 	} else if FileManifest, err = fileindex.UnmarshalManifest(xml); err != nil {
-		FileManifest = fileindex.NewFileManifest()
-		BuildFileManifest()
+		FileManifest = client.BuildFileManifest()
 	} else {
-		CleanManifest()
+		FileManifest = client.CleanManifest(FileManifest)
 		file.Close()
 	}
 	go InitializeFancyStuff()

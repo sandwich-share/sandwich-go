@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+  "sandwich-go/client"
 	"strconv"
 	"sync/atomic"
 	"time"
@@ -57,7 +58,7 @@ func peerHandler(w http.ResponseWriter, r *http.Request) {
 	if peerCacheIP != peer_ip {
 		ManifestLock.Lock()
 		if timeOut == nil || !timeOut.Stop() {
-			CleanManifest()
+			FileManifest = client.CleanManifest(FileManifest)
 		}
 		atomic.StoreInt32(&IsCleanManifest, 1) //Manifest is clean keep it clean
 		x := FileManifest[peer_ip]
