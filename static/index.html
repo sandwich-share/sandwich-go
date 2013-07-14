@@ -76,6 +76,7 @@
               <tbody>
                 <tr ng-show="peerPath">
                   <td><a href="#openFolder" ng-click="fetchPeerFiles(upPath(peerPath))">..</a></td>
+                  <td></td>
                 </tr>
                 <tr ng-repeat="file in peerFiles">
                   <td ng-show="!file.Type">
