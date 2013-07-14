@@ -23,6 +23,7 @@ func DownloadFile(address net.IP, filePath string) error {
 	if !blackWhiteList.OK(address) {
 		return illegalIPError
 	}
+  log.Println("Beginning download of " + filePath)
 	conn, err := net.DialTimeout("tcp", address.String() + util.GetPort(address),
     2*time.Minute)
 	if err != nil {
@@ -73,12 +74,7 @@ func DownloadFile(address net.IP, filePath string) error {
 		}
 	}
 	err = file.Close()
-	if err != nil {
-		return err
-	}
-	if err != nil {
-		return err
-	}
+  log.Println("File download complete: " + path.Join(util.SandwichPath, filePath))
 	return err
 }
 
