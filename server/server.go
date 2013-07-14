@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"bytes"
@@ -7,19 +7,27 @@ import (
 	"log"
 	"net"
 	"net/http"
+  "sandwich-go/addresslist"
+  "sandwich-go/fileindex"
+  "sandwich-go/util"
 	"strings"
 	"sync"
 	"time"
 )
 
-var jsonFileIndexCache []byte
+var addressList *addresslist.SafeIPList        //Thread safe
+var addressSet *addresslist.AddressSet         //Thread safe
+var blackWhiteList *addresslist.BlackWhiteList //Thread safe
+var cacheLock sync.RWMutex
+var fileIndex *fileindex.SafeFileList          //Thread safe
 var gzipFileIndexCache []byte
 var indexHash uint32
-var cacheLock sync.RWMutex
+var jsonFileIndexCache []byte
+var localIP net.IP
 
 func updateCache() {
 	cacheLock.Lock()
-	fileList := FileIndex.Contents()
+	fileList := fileIndex.Contents()
 	fileList.TimeStamp = time.Now()
 	jsonFileIndexCache = fileList.Marshal()
 	indexHash = fileList.IndexHash
@@ -38,7 +46,7 @@ func updateCache() {
 func makeBWListHandler(function http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		ip := net.ParseIP(strings.Split(req.RemoteAddr, ":")[0])
-		if !BlackWhiteList.OK(ip) {
+		if !blackWhiteList.OK(ip) {
 			log.Println("Forbid " + ip.String() + " from accessing service")
 			http.Error(w, "403 Forbidden", http.StatusForbidden)
 		} else {
@@ -49,21 +57,21 @@ func makeBWListHandler(function http.HandlerFunc) http.HandlerFunc {
 
 func versionHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
-	w.Write([]byte(VERSION + "\n"))
+	w.Write([]byte(util.VERSION + "\n"))
 }
 
 func pingHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 	w.Write([]byte("pong\n"))
 	ip := net.ParseIP(strings.Split(req.RemoteAddr, ":")[0])
-	if !AddressList.Contains(ip) {
-		AddressSet.Add(ip)
+	if !addressList.Contains(ip) {
+		addressSet.Add(ip)
 	}
 }
 
 func indexForHandler(w http.ResponseWriter, req *http.Request) {
 	cacheLock.RLock()
-	if indexHash != FileIndex.IndexHash() {
+	if indexHash != fileIndex.IndexHash() {
 		log.Println("Need to update cache")
 		cacheLock.RUnlock()
 		updateCache()
@@ -79,18 +87,18 @@ func indexForHandler(w http.ResponseWriter, req *http.Request) {
 	cacheLock.RUnlock()
 	log.Println("Sent index")
 	ip := net.ParseIP(strings.Split(req.RemoteAddr, ":")[0])
-	if !AddressList.Contains(ip) {
-		AddressSet.Add(ip)
+	if !addressList.Contains(ip) {
+		addressSet.Add(ip)
 	}
 }
 
 func peerListHandler(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Content-Type", "text/json")
-	addressList := AddressList.Contents() //Gets a copy of the underlying IPSlice
-	addressList = append(addressList, MakeLocalPeerItem())
-	json := addressList.Marshal()
+	ipSlice := addressList.Contents() //Gets a copy of the underlying IPSlice
+	ipSlice = append(ipSlice, util.MakePeerItem(localIP, fileIndex))
+	json := ipSlice.Marshal()
 	writer.Write(json)
-	AddressSet.Add(net.ParseIP(strings.Split(request.RemoteAddr, ":")[0]))
+	addressSet.Add(net.ParseIP(strings.Split(request.RemoteAddr, ":")[0]))
 }
 
 type gzipResponseWriter struct {
@@ -120,21 +128,28 @@ func makeGzipHandler(fn http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func InitializeServer() error {
+func Initialize(newAddressList *addresslist.SafeIPList,
+    newAddressSet *addresslist.AddressSet,
+    newBlackWhiteList *addresslist.BlackWhiteList,
+    newFileIndex *fileindex.SafeFileList,
+    newLocalIP net.IP) {
+  addressList = newAddressList
+  addressSet = newAddressSet
+  blackWhiteList = newBlackWhiteList
+  fileIndex = newFileIndex
+  localIP = newLocalIP
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/peerlist", makeBWListHandler(makeGzipHandler(peerListHandler)))
 	mux.HandleFunc("/ping", makeBWListHandler(pingHandler))
 	mux.HandleFunc("/fileindex", makeBWListHandler(indexForHandler))
 	mux.HandleFunc("/version", versionHandler)
-	mux.Handle("/files/", http.StripPrefix("/files/", http.FileServer(http.Dir(SandwichPath))).(http.HandlerFunc))
+	mux.Handle("/files/", http.StripPrefix("/files/", http.FileServer(http.Dir(util.SandwichPath))).(http.HandlerFunc))
 
-	log.Printf("About to listen on %s.\n", GetPort(LocalIP))
-	srv := &http.Server{Handler: mux, Addr: GetPort(LocalIP)}
+	log.Printf("About to listen on %s.\n", util.GetPort(localIP))
+	srv := &http.Server{Handler: mux, Addr: util.GetPort(localIP)}
 	err := srv.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)
-		return err
 	}
-	return nil
 }

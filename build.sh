@@ -25,7 +25,7 @@ else
 	echo "Building release version"
 fi
 
-echo "package main\n\nconst VERSION = \"$VERSION\"\n" > VERSION.go
+echo "package util\n\nconst VERSION = \"$VERSION\"\n" > util/VERSION.go
 
 if [ $UPDATE = "true" ]
 then
@@ -35,5 +35,5 @@ else
 	go build
 fi
 
-rm VERSION.go
+rm util/VERSION.go
 

@@ -13,8 +13,10 @@ import (
 	"sandwich-go/addresslist"
 	"sandwich-go/directory"
 	"sandwich-go/fileindex"
+  "sandwich-go/server"
 	"sandwich-go/settings"
   "sandwich-go/client"
+  "sandwich-go/util"
 	"strings"
 	"sync"
 )
@@ -179,7 +181,7 @@ func Shutdown() {
 
 func main() {
 
-	log.Println(VERSION)
+	log.Println(util.VERSION)
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
@@ -233,7 +235,7 @@ func main() {
 		}
 		log.SetOutput(logWriter)
 	}
-	err = InitializeServer()
+	server.Initialize(AddressList, AddressSet, BlackWhiteList, FileIndex, LocalIP)
 	if err != nil {
 		return
 	}

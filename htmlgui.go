@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
   "sandwich-go/client"
+  "sandwich-go/util"
 	"strconv"
 	"sync/atomic"
 	"time"
@@ -117,7 +118,7 @@ func downloadHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func localVersionHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, VERSION)
+	fmt.Fprintf(w, util.VERSION)
 }
 
 func killHandler(w http.ResponseWriter, r *http.Request) {
