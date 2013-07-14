@@ -11,12 +11,12 @@ import (
 	"path/filepath"
 	"runtime"
 	"sandwich-go/addresslist"
+	"sandwich-go/client"
 	"sandwich-go/directory"
 	"sandwich-go/fileindex"
-  "sandwich-go/server"
+	"sandwich-go/server"
 	"sandwich-go/settings"
-  "sandwich-go/client"
-  "sandwich-go/util"
+	"sandwich-go/util"
 	"strings"
 )
 

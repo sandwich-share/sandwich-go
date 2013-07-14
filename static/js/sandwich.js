@@ -18,7 +18,7 @@ app.controller('MainCtrl', function($scope, $http, $timeout) {
 
   peerWS.onmessage = function(event) {
     $scope.$apply(function() {
-      $scope.peerList = JSON.parse(JSON.parse(event.data));
+      $scope.peerList = JSON.parse(event.data);
     });
   };
 

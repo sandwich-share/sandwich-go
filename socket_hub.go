@@ -22,7 +22,7 @@ func (c *connection) reader() {
 
 func (c *connection) writer() {
 	for json_message := range c.send {
-		err := websocket.JSON.Send(c.ws, json_message)
+		err := websocket.Message.Send(c.ws, json_message)
 		if err != nil {
 			break
 		}
