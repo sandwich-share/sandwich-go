@@ -48,7 +48,7 @@ func initializeAddressList() error {
 		return err
 	}
 
-	path := ConfPath("peerlist")
+	path := util.ConfPath("peerlist")
 	file, err := os.Open(path)
 
 	if err != nil && os.IsNotExist(err) {
@@ -110,20 +110,20 @@ func initializePaths() error {
 		log.Fatal(err)
 		return err
 	}
-	HomePath = usr.HomeDir
+	util.HomePath = usr.HomeDir
 	if Settings.SandwichDirName != "" {
-		SandwichPath = Settings.SandwichDirName
+		util.SandwichPath = Settings.SandwichDirName
 	} else {
-		SandwichPath = filepath.Join(HomePath, SandwichDirName)
+		util.SandwichPath = filepath.Join(util.HomePath, util.SandwichDirName)
 	}
-	_, err = os.Stat(SandwichPath)
+	_, err = os.Stat(util.SandwichPath)
 	if err != nil && os.IsNotExist(err) {
-		err = os.MkdirAll(SandwichPath, os.ModePerm)
+		err = os.MkdirAll(util.SandwichPath, os.ModePerm)
 		if err != nil {
 			log.Fatal(err)
 			return err
 		}
-		log.Println("Created: " + SandwichPath)
+		log.Println("Created: " + util.SandwichPath)
 		return nil
 	} else if err != nil {
 		log.Fatal(err)
@@ -134,7 +134,7 @@ func initializePaths() error {
 
 func initializeSettings() error {
 	var err error
-	settings.SettingsPath = ConfPath("settings.xml")
+	settings.SettingsPath = util.ConfPath("settings.xml")
 	Settings, err = settings.Load()
 	if err != nil {
 		Settings = &settings.Settings{}
@@ -149,7 +149,7 @@ func initializeSettings() error {
 func initializeFileIndex() error {
 	FileIndex = fileindex.New(nil)
 	directory.CheckSumMaxSize = Settings.CheckSumMaxSize
-	directory.StartWatch(SandwichPath, FileIndex)
+	directory.StartWatch(util.SandwichPath, FileIndex)
 	return nil
 }
 
@@ -170,9 +170,9 @@ func bootStrap() error {
 }
 
 func Shutdown() {
-	ioutil.WriteFile(ConfPath("peerlist"), AddressList.Contents().Marshal(), os.ModePerm)
-	ioutil.WriteFile(ConfPath("blackwhitelist.xml"), BlackWhiteList.Marshal(), os.ModePerm)
-	err := ioutil.WriteFile(ConfPath("manifest-cache.json"), FileManifest.Marshal(), os.ModePerm)
+	ioutil.WriteFile(util.ConfPath("peerlist"), AddressList.Contents().Marshal(), os.ModePerm)
+	ioutil.WriteFile(util.ConfPath("blackwhitelist.xml"), BlackWhiteList.Marshal(), os.ModePerm)
+	err := ioutil.WriteFile(util.ConfPath("manifest-cache.json"), FileManifest.Marshal(), os.ModePerm)
 	if err != nil {
 		log.Println(err)
 	}
@@ -185,20 +185,20 @@ func main() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	ConfigPath = ConfigDirName //We need our conf directory to do anything else
-	_, err := os.Stat(ConfigPath)
+	util.ConfigPath = util.ConfigDirName //We need our conf directory to do anything else
+	_, err := os.Stat(util.ConfigPath)
 	if err != nil && os.IsNotExist(err) {
-		err = os.MkdirAll(ConfigPath, os.ModePerm)
+		err = os.MkdirAll(util.ConfigPath, os.ModePerm)
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Println("Created: " + ConfigPath)
+		log.Println("Created: " + util.ConfigPath)
 	} else if err != nil {
 		log.Fatal(err)
 	}
 	AddressSet = addresslist.NewAddressSet()
 	FileManifest = fileindex.NewFileManifest()
-	file, err := os.Open(ConfPath("blackwhitelist.xml"))
+	file, err := os.Open(util.ConfPath("blackwhitelist.xml"))
 	if err != nil {
 		BlackWhiteList = addresslist.NewBWList(Whitelist)
 	} else if data, err := ioutil.ReadAll(file); err != nil {

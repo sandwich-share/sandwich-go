@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"sandwich-go/fileindex"
   "sandwich-go/client"
+  "sandwich-go/util"
 	"sort"
 	"strings"
 	"sync/atomic"
@@ -131,7 +132,7 @@ func ManifestMap() IPFilePairs {
 	fileList := make(IPFilePairs, 0, 100)
 	for ipString, tempFileList := range FileManifest {
 		ip := net.ParseIP(ipString)
-		port := GetPort(ip)
+		port := util.GetPort(ip)
 		for _, fileItem := range tempFileList.List {
 			fileList = append(fileList, &IPFilePair{NetIP(ip), port, fileItem.FileName})
 		}
@@ -193,7 +194,7 @@ func InitializeUserThread() {
 	go downloadThread()
 	go downloadThread()
 	DownloadQueue = make(chan *IPFilePair, 1000)
-	file, err := os.Open(ConfPath("manifest-cache.json"))
+	file, err := os.Open(util.ConfPath("manifest-cache.json"))
 	if err != nil && os.IsNotExist(err) {
 		FileManifest = client.BuildFileManifest()
 	} else if err != nil {

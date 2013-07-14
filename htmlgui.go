@@ -148,7 +148,7 @@ func settingsHandler(w http.ResponseWriter, r *http.Request) {
 func writePeers() {
 	peerList := make([]IPPort, 0, 10)
 	for _, peer := range AddressList.Contents() {
-		peerList = append(peerList, IPPort{peer.IP.String(), GetPort(peer.IP)})
+		peerList = append(peerList, IPPort{peer.IP.String(), util.GetPort(peer.IP)})
 	}
 	json_res, _ := json.Marshal(peerList)
 	peerHub.broadcast <- string(json_res)
