@@ -69,6 +69,7 @@ func (h *hub) run() {
 func peerSocketHandler(ws *websocket.Conn) {
 	c := &connection{send: make(chan string, 256), ws: ws}
 	peerHub.register <- c
+	go writePeers()
 	defer func() { peerHub.unregister <- c }()
 	go c.writer()
 	c.reader()

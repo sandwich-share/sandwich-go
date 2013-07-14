@@ -16,7 +16,7 @@
               <h3>Settings</h3>
             </div>
             <div class="modal-body">
-              <button class="btn" type="button" ng-click="killServer()">Kill</button>
+              <button class="btn" type="button" ng-click="killServer() && hide()">Kill</button>
               <br />
               <label>Local Server Port</label>
               <input type="text" ng-model="settings.port">
@@ -61,11 +61,29 @@
           <div class="span2">
             <table>
               <tr ng-repeat="peer in peerList | orderBy: 'IP'">
-                <td><a href="#peerFiles" ng-click="fetchPeerFiles('', peer['IP'], peer['Port'])">{{peer['IP']}}</a></td>
+                <td><a href="#" ng-click="fetchPeerFiles('', peer['IP'], peer['Port'])">{{peer['IP']}}</a></td>
               </tr>
             </table>
           </div>
           <div id="content" class="span10" infinite-scroll="loadMore()" infinite-scroll-disabled="loading">
+            <table class='table' ng-show="isPeerSearch">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>File/Folder</th>
+                  <th>Sandwich Download</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-show="peerPath">
+                  <td><a href="#openFolder" ng-click="fetchPeerFiles(peerUpPath(peerPath))">..</a></td>
+                </tr>
+                <tr ng-repeat"file in peerFiles">
+                  <td>{{file}}</td>
+                  <td>wat</td>
+                </tr>
+              </tbody>
+            </table>
             <table class='table' ng-show="isFileSearch">
               <thead>
                 <tr>
@@ -82,32 +100,6 @@
                   </td>
                   <td>
                     <a href='#download' ng-click="downloadFile(file['IP'], file['FileName'], 1)">Download</a>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <table class='table' ng-show="isPeerSearch">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>File/Folder</th>
-                  <th>Sandwich Download</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr ng-show="peerPath">
-                  <td><a href="#openFolder" ng-click="fetchPeerFiles(peerUpPath())">..</a></td>
-                </tr>
-                <tr ng-repeat"file in peerFiles">
-                  <td ng-if="!file['Type']">
-                    <a href="#openFolder" ng-click="fetchPeerFiles(file['Name'])">{{file['Name']}}</a>
-                  </td>
-                  <td ng-if"file['Type']">
-                    <a href="{{fileUrl(file['Name'])}}">{{file['Name']}}</a>
-                  </td>
-                  <td>{{file['Type']}}</td>
-                  <td>
-                    <a href="#download" ng-click="downloadFile(file['IP'], file['FileName'], file['Type'])">Download</a>
                   </td>
                 </tr>
               </tbody>

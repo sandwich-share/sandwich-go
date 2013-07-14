@@ -1,8 +1,8 @@
 var app = angular.module('sandwich', ['infinite-scroll', '$strap.directives']);
 
 app.controller('MainCtrl', function($scope, $http, $timeout) {
-  $scope.peerFiles = [];
   $scope.searchFiles = [];
+  $scope.peerFiles = [];
   $scope.isPeerSearch = false;
   $scope.isFileSearch = false;
   $scope.loading = false;
@@ -10,10 +10,10 @@ app.controller('MainCtrl', function($scope, $http, $timeout) {
   $scope.alerts = [];
   $scope.settings = {};
   $scope.version = '';
+  $scope.peerPath = '';
+  $scope.peerIP = '';
   var step = 100;
-  var peerIP = '';
   var peerPort = '';
-  var peerPath = '';
   var peerWS = new WebSocket("ws://localhost:9001/peerSocket");
 
   peerWS.onmessage = function(event) {
@@ -40,21 +40,21 @@ app.controller('MainCtrl', function($scope, $http, $timeout) {
     }
   };
 
-  $scope.peerUpPath = function() {
-    return peerPath.replace(/\/?[^/]+$/,'');
+  $scope.upPath = function(path) {
+    return path.replace(/\/?[^/]+$/,'');
   };
 
   $scope.fileUrl = function(fileName, ip, port) {
-    ip = ip || peerIP;
+    ip = ip || $scope.peerIP;
     port = port || peerPort;
-    return "http://" + ip + ":" + port + "/files/" + fileName;
+    return "http://" + ip + port + "/files/" + fileName;
   };
 
   $scope.fetchPeerFiles = function(path, ip, port) {
     $scope.loading = true;
 
-    if (path) {
-      peerPath = path;
+    if (path !== undefined) {
+      $scope.peerPath = path;
       $scope.peerFiles = [];
       $scope.gotAll = false;
     }
@@ -62,17 +62,28 @@ app.controller('MainCtrl', function($scope, $http, $timeout) {
     if (ip) {
       $scope.isPeerSearch = true;
       $scope.isFileSearch = false;
+      $scope.peerIP = ip;
       peerPort = port;
-      peerIP = ip;
     }
 
-    $http.get('/peer', {params: {peer: peerIP, path: peerPath, start: $scope.peerFiles.length, step: step}}).success(function(data) {
+    $http.get('/peer', {params: {peer: $scope.peerIP, path: $scope.peerPath, start: $scope.peerFiles.length, step: step}}).success(function(data) {
       if (!data.length) {
         $scope.gotAll = true;
       }
       $scope.peerFiles = $scope.peerFiles.concat(data);
+      window.peerFiles = $scope.peerFiles;
       $scope.loading = false;
     });
+  };
+
+  window.wat = function() {
+    $scope.$apply(function(){
+      $scope.peerFiles = [{Type: 1, Name: 'a'}, {Type: 0, Name: 'b'}];
+    });
+  };
+
+  window.woot = function() {
+    return $scope.peerFiles;
   };
 
   $scope.fetchSearchFiles = function(search, regex) {
@@ -90,6 +101,7 @@ app.controller('MainCtrl', function($scope, $http, $timeout) {
         $scope.gotAll = true;
       }
       $scope.searchFiles = $scope.searchFiles.concat(data);
+      window.searchFiles = $scope.searchFiles;
       $scope.loading = false;
     });
   };
@@ -106,6 +118,9 @@ app.controller('MainCtrl', function($scope, $http, $timeout) {
   $scope.killServer = function() {
     if (confirm("Are you sure you want to shut down?")) {
       $http.get('/kill');
+      return true;
+    } else {
+      return false;
     }
   };
 
