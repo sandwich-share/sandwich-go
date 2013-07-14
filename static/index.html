@@ -61,7 +61,7 @@
           <div class="span2">
             <table>
               <tr ng-repeat="peer in peerList | orderBy: 'IP'">
-                <td><a href="#" ng-click="fetchPeerFiles('', peer['IP'], peer['Port'])">{{peer['IP']}}</a></td>
+                <td><a href="#" ng-click="fetchPeerFiles('', peer.IP, peer.Port)">{{peer.IP}}</a></td>
               </tr>
             </table>
           </div>
@@ -70,17 +70,23 @@
               <thead>
                 <tr>
                   <th>Name</th>
-                  <th>File/Folder</th>
                   <th>Sandwich Download</th>
                 </tr>
               </thead>
               <tbody>
                 <tr ng-show="peerPath">
-                  <td><a href="#openFolder" ng-click="fetchPeerFiles(peerUpPath(peerPath))">..</a></td>
+                  <td><a href="#openFolder" ng-click="fetchPeerFiles(upPath(peerPath))">..</a></td>
                 </tr>
-                <tr ng-repeat"file in peerFiles">
-                  <td>{{file}}</td>
-                  <td>wat</td>
+                <tr ng-repeat="file in peerFiles">
+                  <td ng-show="!file.Type">
+                    <a href="#openFolder" ng-click="fetchPeerFiles(file.Name)"><i class="icon-folder-open"></i> {{file.Name}}</a>
+                  </td>
+                  <td ng-show="file.Type">
+                    <a href="{{fileUrl(file.Name)}}"><i class="icon-file"></i> {{file.Name}}</a>
+                  </td>
+                  <td>
+                    <a href="#download" ng-click="downloadFile(peerIP, file.Name, file.Type)">Download</a>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -94,12 +100,12 @@
               </thead>
               <tbody>
                 <tr ng-repeat="file in searchFiles">
-                  <td>{{file['IP']}}</td>
+                  <td>{{file.IP}}</td>
                   <td>
-                    <a href="{{fileUrl(file['FileName'], file['IP'], file['Port'])}}">{{file['FileName']}}</a>
+                    <a href="{{fileUrl(file.FileName, file.IP, file.Port)}}">{{file.FileName}}</a>
                   </td>
                   <td>
-                    <a href='#download' ng-click="downloadFile(file['IP'], file['FileName'], 1)">Download</a>
+                    <a href='#download' ng-click="downloadFile(file.IP, file.FileName, 1)">Download</a>
                   </td>
                 </tr>
               </tbody>
