@@ -8,9 +8,9 @@ import (
 	"net"
 	"os"
 	"regexp"
+	"sandwich-go/client"
 	"sandwich-go/fileindex"
-  "sandwich-go/client"
-  "sandwich-go/util"
+	"sandwich-go/util"
 	"sort"
 	"strings"
 	"time"
@@ -123,7 +123,7 @@ func (filter SimpleFilter) Filter(toCompare IPFilePair) bool {
 }
 
 func ManifestMap() IPFilePairs {
-  FileManifest = client.CleanManifest(FileManifest)
+	FileManifest = client.CleanManifest(FileManifest)
 	fileList := make(IPFilePairs, 0, 100)
 	for ipString, tempFileList := range FileManifest {
 		ip := net.ParseIP(ipString)
