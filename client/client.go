@@ -149,7 +149,7 @@ func GetPeerList(address net.IP) (addresslist.PeerList, error) {
 	return peerlist, err
 }
 
-func UpdateAddressList(newList addresslist.PeerList) {
+func updateAddressList(newList addresslist.PeerList) {
 	oldList := addressList.Contents()
 	var resultList addresslist.PeerList
 	reduceMap := make(map[string]*addresslist.PeerItem)
@@ -188,7 +188,9 @@ func UpdateAddressList(newList addresslist.PeerList) {
 	for _, value := range reduceMap {
 		resultList = append(resultList, value)
 	}
-	util.Save(resultList)
+  if len(resultList) > 0 {
+	  util.Save(resultList)
+  }
 	addressList.Copy(resultList)
 }
 

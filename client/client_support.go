@@ -144,7 +144,7 @@ func keepAliveLoop() {
 			addressList.Add(&addresslist.PeerItem{entry.IP, entry.IndexHash,
         time.Now()})
 		}
-		UpdateAddressList(peerList)
+		updateAddressList(peerList)
 		select {
 		case <-lastFlush:
 			lastFlush = time.After(time.Hour)
