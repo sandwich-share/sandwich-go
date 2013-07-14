@@ -13,7 +13,6 @@ import (
   "sandwich-go/util"
 	"sort"
 	"strings"
-	"sync/atomic"
 	"time"
 )
 
@@ -124,11 +123,7 @@ func (filter SimpleFilter) Filter(toCompare IPFilePair) bool {
 }
 
 func ManifestMap() IPFilePairs {
-	ManifestLock.Lock()
-	if timeOut == nil || !timeOut.Stop() {
-		FileManifest = client.CleanManifest(FileManifest)
-	}
-	atomic.StoreInt32(&IsCleanManifest, 1) //Manifest is clean keep it clean
+  FileManifest = client.CleanManifest(FileManifest)
 	fileList := make(IPFilePairs, 0, 100)
 	for ipString, tempFileList := range FileManifest {
 		ip := net.ParseIP(ipString)
@@ -137,10 +132,6 @@ func ManifestMap() IPFilePairs {
 			fileList = append(fileList, &IPFilePair{NetIP(ip), port, fileItem.FileName})
 		}
 	}
-	timeOut = time.AfterFunc(time.Minute, func() {
-		atomic.StoreInt32(&IsCleanManifest, 0) //Timed out let the Manifest get dirty
-	})
-	ManifestLock.Unlock()
 	return fileList
 }
 
