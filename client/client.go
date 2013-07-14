@@ -101,6 +101,7 @@ func GetVersion(address net.IP) (string, error) {
 }
 
 func BuildFileManifest() (fileManifest fileindex.FileManifest) {
+  fileManifest = fileindex.NewFileManifest()
 	peerList := addressList.Contents()
 	out1 := make(chan net.IP)
 	out2 := make(chan net.IP)

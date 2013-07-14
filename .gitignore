@@ -22,8 +22,9 @@ _testmain.go
 
 *.exe
 
-# the log file
+# log files
 log
+*.log
 
 # The binary
 sandwich-go
