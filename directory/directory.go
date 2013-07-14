@@ -159,6 +159,7 @@ func StartWatch(dir string, fileIndex *fileindex.SafeFileList) {
 				if err == nil && info.IsDir() {
 					fileList := BuildFileList("", fullName)
 					fileIndex.Concat(fileList)
+          log.Println(fullName + " was added to the manifest.")
 				} else if err == nil {
 					fileItem, err := GetFileItemName(fullName)
 					if err == nil { //Otherwise the file was deleted before we could create it
@@ -171,18 +172,21 @@ func StartWatch(dir string, fileIndex *fileindex.SafeFileList) {
 				}
 			case event.IsDelete():
 				fileIndex.Remove(name)
+        log.Println(name + " was removed from the manifest.")
 			case event.IsModify():
 				fileIndex.Remove(name)
 				fileItem, err := GetFileItemName(fullName)
 				if err == nil { //Otherwise the file was deleted before we could create it
 					if utf8.ValidString(fileItem.FileName) {
 						fileList.Add(fileItem)
+            log.Println(fullName + " was added to the manifest.")
 					} else {
 						log.Println("Hey bra, you cannot have non-utf8 encoded file names")
 					}
 				}
 			case event.IsRename():
 				fileIndex.Remove(name)
+        log.Println(name + " was removed from the manifest.")
 			}
 			lock.Signal()
 		}

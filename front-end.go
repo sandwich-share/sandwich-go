@@ -124,6 +124,7 @@ func (filter SimpleFilter) Filter(toCompare IPFilePair) bool {
 
 func ManifestMap() IPFilePairs {
   FileManifest = client.CleanManifest(FileManifest)
+  log.Println("FileManifest was updated.")
 	fileList := make(IPFilePairs, 0, 100)
 	for ipString, tempFileList := range FileManifest {
 		ip := net.ParseIP(ipString)
