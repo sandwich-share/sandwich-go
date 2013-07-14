@@ -170,7 +170,7 @@ func bootStrap() error {
 }
 
 func Shutdown() {
-	ioutil.WriteFile(util.ConfPath("peerlist"), AddressList.Contents().Marshal(), os.ModePerm)
+	util.Save(AddressList.Contents())
 	ioutil.WriteFile(util.ConfPath("blackwhitelist.xml"), BlackWhiteList.Marshal(), os.ModePerm)
 	err := ioutil.WriteFile(util.ConfPath("manifest-cache.json"), FileManifest.Marshal(), os.ModePerm)
 	if err != nil {
