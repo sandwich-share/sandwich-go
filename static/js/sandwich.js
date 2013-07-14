@@ -71,19 +71,8 @@ app.controller('MainCtrl', function($scope, $http, $timeout) {
         $scope.gotAll = true;
       }
       $scope.peerFiles = $scope.peerFiles.concat(data);
-      window.peerFiles = $scope.peerFiles;
       $scope.loading = false;
     });
-  };
-
-  window.wat = function() {
-    $scope.$apply(function(){
-      $scope.peerFiles = [{Type: 1, Name: 'a'}, {Type: 0, Name: 'b'}];
-    });
-  };
-
-  window.woot = function() {
-    return $scope.peerFiles;
   };
 
   $scope.fetchSearchFiles = function(search, regex) {
