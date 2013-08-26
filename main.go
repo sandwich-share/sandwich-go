@@ -153,15 +153,19 @@ func initializeFileIndex() error {
 
 func bootStrap() error {
 	iplist := make(addresslist.PeerList, 1)
-	var rawIP string
-	fmt.Print("Please enter an IP address for bootstrap\n=>")
-	_, err := fmt.Scanln(&rawIP)
+	var host string
+	fmt.Print("Please enter a host name for bootstrap\n=>")
+	_, err := fmt.Scanln(&host)
 	if err != nil {
 		log.Println(err)
 		return bootStrap()
 	}
-	addrs := net.ParseIP(rawIP)
-	iplist[0] = &addresslist.PeerItem{addrs, FileIndex.IndexHash(), FileIndex.TimeStamp()}
+	addrs, err := net.LookupIP(host)
+	if err != nil {
+		log.Println(err)
+		return bootStrap()
+	}
+	iplist[0] = &addresslist.PeerItem{addrs[0], FileIndex.IndexHash(), FileIndex.TimeStamp()}
 	AddressList = addresslist.New(iplist)
 	log.Println("Created new peerlist")
 	return nil
