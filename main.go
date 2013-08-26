@@ -94,8 +94,15 @@ func getIPsToBind() error {
 	
 	addrCount := 0
 	for _, addr := range addrs {
-		ip := net.ParseIP(addr.String())
-		if !ip.IsLoopback() && !ip.IsUnspecified() {
+		ip := net.ParseIP(strings.Split(addr.String(), "/")[0])
+
+		if strings.Contains(ip.String(), ":") {
+			// IPv6 is unsupported currently
+			continue
+		}
+
+
+		if ip != nil && !ip.IsLoopback() && !ip.IsUnspecified() {
 			if externalIP == nil || !externalIP.Equal(ip) {
 				addrCount++
 			}
@@ -105,16 +112,21 @@ func getIPsToBind() error {
 	if externalIP != nil {
 		BoundIPs = make([]net.IP, addrCount + 1)
 	} else {
-	    BoundIPs = make([]net.IP, addrCount)
+		BoundIPs = make([]net.IP, addrCount)
 	}
 
 	addrIndex := 0
 	for i := 0; i < addrCount; i++ {
 		for addrIndex < len(addrs) {
-			ip := net.ParseIP(addrs[addrIndex].String())
+			ip := net.ParseIP(strings.Split(addrs[addrIndex].String(), "/")[0])
 			addrIndex++
 
-			if !ip.IsLoopback() && !ip.IsUnspecified() {
+			if strings.Contains(ip.String(), ":") {
+				// IPv6 is unsupported currently
+				continue
+			}
+
+			if ip != nil && !ip.IsLoopback() && !ip.IsUnspecified() {
 				if externalIP == nil || !externalIP.Equal(ip) {
 					BoundIPs[i] = ip
 					log.Println("Found interface IP: " + ip.String())
