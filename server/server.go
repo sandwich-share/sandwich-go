@@ -23,7 +23,7 @@ var fileIndex *fileindex.SafeFileList          //Thread safe
 var gzipFileIndexCache []byte
 var indexHash uint32
 var jsonFileIndexCache []byte
-var localIP net.IP
+var boundIPs []net.IP
 
 func updateCache() {
 	cacheLock.Lock()
@@ -95,7 +95,11 @@ func indexForHandler(w http.ResponseWriter, req *http.Request) {
 func peerListHandler(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Content-Type", "text/json")
 	ipSlice := addressList.Contents() //Gets a copy of the underlying IPSlice
-	ipSlice = append(ipSlice, util.MakePeerItem(localIP, fileIndex))
+	
+	for _, ip := range boundIPs {
+		ipSlice = append(ipSlice, util.MakePeerItem(ip, fileIndex))
+	}
+
 	json := ipSlice.Marshal()
 	writer.Write(json)
 	addressSet.Add(net.ParseIP(strings.Split(request.RemoteAddr, ":")[0]))
@@ -129,15 +133,15 @@ func makeGzipHandler(fn http.HandlerFunc) http.HandlerFunc {
 }
 
 func Initialize(newAddressList *addresslist.SafeIPList,
-    newAddressSet *addresslist.AddressSet,
-    newBlackWhiteList *addresslist.BlackWhiteList,
-    newFileIndex *fileindex.SafeFileList,
-    newLocalIP net.IP) {
+	newAddressSet *addresslist.AddressSet,
+	newBlackWhiteList *addresslist.BlackWhiteList,
+	newFileIndex *fileindex.SafeFileList,
+	newBoundIPs []net.IP) {
   addressList = newAddressList
   addressSet = newAddressSet
   blackWhiteList = newBlackWhiteList
   fileIndex = newFileIndex
-  localIP = newLocalIP
+  boundIPs = newBoundIPs
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/peerlist", makeBWListHandler(makeGzipHandler(peerListHandler)))
@@ -146,10 +150,9 @@ func Initialize(newAddressList *addresslist.SafeIPList,
 	mux.HandleFunc("/version", versionHandler)
 	mux.Handle("/files/", http.StripPrefix("/files/", http.FileServer(http.Dir(util.SandwichPath))).(http.HandlerFunc))
 
-	log.Printf("About to listen on %s.\n", util.GetPort(localIP))
-	srv := &http.Server{Handler: mux, Addr: util.GetPort(localIP)}
-	err := srv.ListenAndServe()
-	if err != nil {
-		log.Fatal(err)
+	for _, ip := range boundIPs {
+		log.Printf("About to listen on %s for %s\n", util.GetPort(ip), ip.String())
+		srv := &http.Server{Handler: mux, Addr: util.GetPort(ip)}
+		go srv.ListenAndServe()
 	}
 }

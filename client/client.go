@@ -12,8 +12,8 @@ import (
 	"path/filepath"
 	"sandwich-go/addresslist"
 	"sandwich-go/fileindex"
-  "sandwich-go/settings"
-  "sandwich-go/util"
+	"sandwich-go/settings"
+	"sandwich-go/util"
 	"sort"
 	"strings"
 	"time"
@@ -25,7 +25,7 @@ func DownloadFile(address net.IP, filePath string) error {
 	}
   log.Println("Beginning download of " + filePath)
 	conn, err := net.DialTimeout("tcp", address.String() + util.GetPort(address),
-    2*time.Minute)
+	2*time.Minute)
 	if err != nil {
 		return err
 	}
@@ -149,6 +149,15 @@ func GetPeerList(address net.IP) (addresslist.PeerList, error) {
 	return peerlist, err
 }
 
+func isIgnoredAddress(address net.IP) bool {
+	for _, ignoredIP := range ignoredIPs {
+		if ignoredIP.Equal(address) {
+			return true
+		}
+	}
+	return false
+}
+
 func updateAddressList(newList addresslist.PeerList) {
 	oldList := addressList.Contents()
 	var resultList addresslist.PeerList
@@ -160,7 +169,7 @@ func updateAddressList(newList addresslist.PeerList) {
 		return
 	}
 	for _, elem := range oldList {
-		if elem.IP.Equal(localIP) {
+		if isIgnoredAddress(elem.IP) {
 			continue
 		}
 		toReplace, ok := reduceMap[string(elem.IP)]
@@ -173,7 +182,7 @@ func updateAddressList(newList addresslist.PeerList) {
 		}
 	}
 	for _, elem := range newList {
-		if elem.IP.Equal(localIP) {
+		if isIgnoredAddress(elem.IP) {
 			continue
 		}
 		toReplace, ok := reduceMap[string(elem.IP)]
@@ -207,15 +216,18 @@ func Ping(address net.IP) bool {
 }
 
 func Initialize(newAddressList *addresslist.SafeIPList,
-    newAddressSet *addresslist.AddressSet,
-    newBlackWhiteList *addresslist.BlackWhiteList,
-    newLocalIp net.IP,
-    newSettings *settings.Settings) {
+	newAddressSet *addresslist.AddressSet,
+	newBlackWhiteList *addresslist.BlackWhiteList,
+	newIgnoredIPs []net.IP,
+	newSettings *settings.Settings) {
   addressList = newAddressList
   addressSet = newAddressSet
   blackWhiteList = newBlackWhiteList
-  localIP = newLocalIp
+  ignoredIPs = newIgnoredIPs
   sandwichSettings = newSettings
+}
+
+func StartClientLoop() {
 	if addressList.Len() == 0 && !sandwichSettings.LoopOnEmpty {
 		log.Fatal("AddressList ran out of peers")
 	}
@@ -231,7 +243,7 @@ func CleanManifest(fileManifest fileindex.FileManifest) fileindex.FileManifest {
 	for _, entry := range addressList {
 		fileIndex, ok := fileManifest[entry.IP.String()]
 		if ok && (entry.IndexHash == fileIndex.IndexHash ||
-        fileIndex.TimeStamp.After(entry.LastSeen)) {
+		fileIndex.TimeStamp.After(entry.LastSeen)) {
 			continue
 		} else {
 			log.Println("Updated entry")

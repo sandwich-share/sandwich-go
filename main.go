@@ -26,7 +26,7 @@ var FileIndex *fileindex.SafeFileList          //Thread safe
 var BlackWhiteList *addresslist.BlackWhiteList //Thread safe
 var FileManifest fileindex.FileManifest        //NOT THREAD SAFE
 var IsCleanManifest int32
-var LocalIP net.IP
+var BoundIPs []net.IP
 var Settings *settings.Settings
 
 //var Whitelist = []*addresslist.IPRange{&addresslist.IPRange{net.ParseIP("129.22.0.0"), net.ParseIP("129.22.255.255")}, // CWRUNET
@@ -40,7 +40,7 @@ var Settings *settings.Settings
 var Whitelist = []*addresslist.IPRange{&addresslist.IPRange{net.ParseIP("0.0.0.0"), net.ParseIP("255.255.255.255")}}
 
 func initializeAddressList() error {
-	err := getLocalIP()
+	err := getIPsToBind()
 	if err != nil {
 		log.Fatal(err)
 		return err
@@ -75,30 +75,59 @@ func initializeAddressList() error {
 	return err
 }
 
-func getLocalIP() error {
-	resp, err := http.Get("http://curlmyip.com")
+func getIPsToBind() error {
+	addrs, err := net.InterfaceAddrs()
 	if err != nil {
-		log.Println(err)
-		conn, err := net.Dial("tcp", "google.com:80")
-		if err != nil {
-			log.Fatal(err)
-			return err
-		}
-		LocalIP = net.ParseIP(strings.Split(conn.LocalAddr().String(), ":")[0])
-		err = conn.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	} else {
+		log.Println("Failed to get interface addresses");
+		return err
+	}
+
+	externalIP := net.IP(nil)
+	resp, err := http.Get("http://curlmyip.com")
+	if err == nil {
 		b, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			log.Println("Failed to read body")
-			return err
-		} else {
-			LocalIP = net.ParseIP(strings.TrimSpace(string(b)))
+		if err == nil {
+			externalIP = net.ParseIP(strings.TrimSpace(string(b)))
+			log.Println("External IP is: " + externalIP.String())
 		}
 	}
-	log.Println("Local IP is: " + LocalIP.String())
+	
+	addrCount := 0
+	for _, addr := range addrs {
+		ip := net.ParseIP(addr.String())
+		if !ip.IsLoopback() && !ip.IsUnspecified() {
+			if externalIP == nil || !externalIP.Equal(ip) {
+				addrCount++
+			}
+		}
+	}
+
+	if externalIP != nil {
+		BoundIPs = make([]net.IP, addrCount + 1)
+	} else {
+	    BoundIPs = make([]net.IP, addrCount)
+	}
+
+	addrIndex := 0
+	for i := 0; i < addrCount; i++ {
+		for addrIndex < len(addrs) {
+			ip := net.ParseIP(addrs[addrIndex].String())
+			addrIndex++
+
+			if !ip.IsLoopback() && !ip.IsUnspecified() {
+				if externalIP == nil || !externalIP.Equal(ip) {
+					BoundIPs[i] = ip
+					log.Println("Found interface IP: " + ip.String())
+					break
+				}
+			}
+		}
+	}
+	
+	if externalIP != nil {
+		BoundIPs[addrCount] = externalIP
+	}
+	
 	return nil
 }
 
@@ -227,8 +256,7 @@ func main() {
 	if err != nil {
 		return
 	}
-	go client.Initialize(AddressList, AddressSet, BlackWhiteList, LocalIP, Settings)
-	InitializeUserThread()
+	
 	if !Settings.WriteLogToScreen {
 		logWriter, err := os.Create("log")
 		if err != nil {
@@ -237,8 +265,10 @@ func main() {
 		}
 		log.SetOutput(logWriter)
 	}
-	server.Initialize(AddressList, AddressSet, BlackWhiteList, FileIndex, LocalIP)
-	if err != nil {
-		return
-	}
+
+	server.Initialize(AddressList, AddressSet, BlackWhiteList, FileIndex, BoundIPs)
+	client.Initialize(AddressList, AddressSet, BlackWhiteList, BoundIPs, Settings)
+	InitializeUserThread()
+	
+	client.StartClientLoop()
 }

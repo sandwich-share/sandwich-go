@@ -21,7 +21,7 @@ var addressList *addresslist.SafeIPList //Thread safe
 var addressSet *addresslist.AddressSet //Thread safe
 var blackWhiteList *addresslist.BlackWhiteList //Thread safe
 var illegalIPError = errors.New("The requested ip is illegal")
-var localIP net.IP
+var ignoredIPs []net.IP
 var removeSet map[string]time.Time
 var sandwichSettings *settings.Settings
 
