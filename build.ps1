@@ -8,7 +8,7 @@ $UPDATE = 0
 if ($args.count -gt 0) {
 	if ($args[0].CompareTo("release") -eq 0) {
 		$RELEASE = 1
-	} else if ($args[0].CompareTo("update") -eq 0) {
+	} elseif ($args[0].CompareTo("update") -eq 0) {
 		$UPDATE = 1
 	}
 }
