@@ -1,13 +1,13 @@
 package fileindex
 
-import(
+import (
 	"sync"
 	"time"
 )
 
 type SafeFileList struct {
 	fileList *FileList
-	m sync.RWMutex
+	m        sync.RWMutex
 }
 
 func New(list *FileList) *SafeFileList {
@@ -78,4 +78,3 @@ func (list *SafeFileList) UpdateHash() {
 	list.fileList.UpdateHash()
 	list.m.Unlock()
 }
-

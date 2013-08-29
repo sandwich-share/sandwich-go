@@ -1,16 +1,16 @@
 package addresslist
 
-import(
+import (
 	"net"
 	"sync"
 )
 
 type AddressSet struct {
 	hashSet map[string]net.IP
-	lock sync.RWMutex
+	lock    sync.RWMutex
 }
 
-func NewAddressSet() (*AddressSet) {
+func NewAddressSet() *AddressSet {
 	var lock sync.RWMutex
 	hashSet := make(map[string]net.IP)
 	return &AddressSet{hashSet, lock}
@@ -57,7 +57,7 @@ func (set *AddressSet) GetList() []net.IP {
 	return netList
 }
 
-func (set *AddressSet)  Delete(address net.IP) {
+func (set *AddressSet) Delete(address net.IP) {
 	set.lock.Lock()
 	delete(set.hashSet, address.String())
 	set.lock.Unlock()
@@ -74,4 +74,3 @@ func (set *AddressSet) Pop() net.IP {
 	set.lock.Unlock()
 	return retVal
 }
-

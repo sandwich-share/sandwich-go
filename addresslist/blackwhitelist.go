@@ -1,9 +1,9 @@
 package addresslist
 
-import(
-	"net"
+import (
 	"encoding/xml"
 	"log"
+	"net"
 	"sync"
 )
 
@@ -15,16 +15,16 @@ func Inc(address net.IP) net.IP {
 
 //Destroys the array passed in
 func inc(address net.IP) net.IP {
-	address[len(address) - 1]++
-	if address[len(address) - 1] == byte(0) && len(address) > 1 {
-		return append(inc(address[:len(address) - 1]), address[len(address) - 1])
+	address[len(address)-1]++
+	if address[len(address)-1] == byte(0) && len(address) > 1 {
+		return append(inc(address[:len(address)-1]), address[len(address)-1])
 	}
 	return address
 }
 
 type IPRange struct {
 	Start net.IP
-	End net.IP
+	End   net.IP
 }
 
 func (pair *IPRange) String() string {
@@ -47,15 +47,15 @@ func (pair *IPRange) shouldCombine(newRange *IPRange) bool {
 // THE ONLY REASON THAT THIS VALUE IS EXPORTED IS FOR SERIALIZATION
 type BlackWhiteList struct {
 	whitelist, Blacklist []*IPRange //Blacklist is exported so that it may be serialized properly
-	m sync.RWMutex
+	m                    sync.RWMutex
 }
 
 //Destroys the array passed in
 func remove(list []*IPRange, index int) []*IPRange {
 	for i := index + 1; i < len(list); i++ {
-		list[i - 1] = list[i]
+		list[i-1] = list[i]
 	}
-	return list[:len(list) - 1]
+	return list[:len(list)-1]
 }
 
 func NewBWList(whitelist []*IPRange) *BlackWhiteList {
@@ -216,4 +216,3 @@ func (list *BlackWhiteList) BlacklistRange(newRange *IPRange) {
 	list.m.Unlock()
 	list.Blacklist = append(list.Blacklist, newRange)
 }
-

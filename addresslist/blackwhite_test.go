@@ -1,9 +1,9 @@
 package addresslist
 
-import(
-	"testing"
+import (
 	"fmt"
 	"net"
+	"testing"
 )
 
 func TestHas(t *testing.T) {
@@ -33,7 +33,7 @@ func TestRemove(t *testing.T) {
 	if !iprangeList[0].Start.Equal(net.ParseIP("129.22.0.6")) || !iprangeList[1].Start.Equal(net.ParseIP("129.22.0.9")) {
 		t.Errorf("did not remove first element correctly")
 	}
-	iprangeList = remove(iprangeList, len(iprangeList) - 1)
+	iprangeList = remove(iprangeList, len(iprangeList)-1)
 	if !iprangeList[0].Start.Equal(net.ParseIP("129.22.0.6")) || len(iprangeList) != 1 {
 		t.Errorf("did not remove last element correctly")
 	}
@@ -118,4 +118,3 @@ func TestBlacklistRange(t *testing.T) {
 		t.Errorf("Does not add multiple ranges correctly.\nWanted:\n%sGot:\n%s", shouldBe.String(), bwlist.String())
 	}
 }
-

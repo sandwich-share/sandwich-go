@@ -1,24 +1,24 @@
 package addresslist
 
-import(
+import (
+	"encoding/json"
+	"log"
 	"net"
 	"time"
-	"log"
-	"encoding/json"
 )
 
 // A very convenient representation of the elements that identify a peer
 type PeerItem struct {
-	IP net.IP
+	IP        net.IP
 	IndexHash uint32
-	LastSeen time.Time
+	LastSeen  time.Time
 }
 
 // Need to convert PeerItems to this since json.Marshal chokes on []byte to IP
 type SerialItem struct {
-	IP string
+	IP        string
 	IndexHash uint32
-	LastSeen time.Time
+	LastSeen  time.Time
 }
 
 type PeerList []*PeerItem
@@ -42,7 +42,7 @@ func (item *PeerItem) UnmarshalJSON(jsonItem []byte) error {
 
 //This is useful for testing
 func (item *PeerItem) Equal(newItem *PeerItem) bool {
-    return item.IP.Equal(newItem.IP) && item.IndexHash == item.IndexHash && item.LastSeen.Equal(newItem.LastSeen)
+	return item.IP.Equal(newItem.IP) && item.IndexHash == item.IndexHash && item.LastSeen.Equal(newItem.LastSeen)
 }
 
 func Unmarshal(jsonList []byte) PeerList {
@@ -67,15 +67,15 @@ func (list PeerList) Len() int {
 }
 
 func (list PeerList) Equal(newList PeerList) bool {
-    if list.Len() != newList.Len() {
-        return false
-    }
-    for i := range list {
-        if list[i] != newList[i] {
-            return false
-        }
-    }
-    return true
+	if list.Len() != newList.Len() {
+		return false
+	}
+	for i := range list {
+		if list[i] != newList[i] {
+			return false
+		}
+	}
+	return true
 }
 
 func IPLess(listA, listB net.IP) bool {
@@ -110,7 +110,7 @@ func IPGreaterEqual(listA, listB net.IP) bool {
 }
 
 func (list PeerList) Contains(ip net.IP) bool {
-	for _, entry := range(list) {
+	for _, entry := range list {
 		if entry.IP.Equal(ip) {
 			return true
 		}
@@ -132,8 +132,6 @@ func (list PeerList) Add(item *PeerItem) {
 	list = append(list, item)
 }
 
-
 func (list PeerList) Concat(newList PeerList) {
 	list = append(list, newList...)
 }
-

@@ -7,9 +7,9 @@ import (
 	"log"
 	"net"
 	"net/http"
-  "sandwich-go/addresslist"
-  "sandwich-go/fileindex"
-  "sandwich-go/util"
+	"sandwich-go/addresslist"
+	"sandwich-go/fileindex"
+	"sandwich-go/util"
 	"strings"
 	"sync"
 	"time"
@@ -19,7 +19,7 @@ var addressList *addresslist.SafeIPList        //Thread safe
 var addressSet *addresslist.AddressSet         //Thread safe
 var blackWhiteList *addresslist.BlackWhiteList //Thread safe
 var cacheLock sync.RWMutex
-var fileIndex *fileindex.SafeFileList          //Thread safe
+var fileIndex *fileindex.SafeFileList //Thread safe
 var gzipFileIndexCache []byte
 var indexHash uint32
 var jsonFileIndexCache []byte
@@ -56,11 +56,10 @@ func makeBWListHandler(function http.HandlerFunc) http.HandlerFunc {
 }
 
 func isFromClient(req *http.Request) bool {
-    queryParams := req.URL.Query()
-    request_type, ok := queryParams["type"]
-    return ok && len(request_type) > 0 && request_type[0] == "client"
+	queryParams := req.URL.Query()
+	request_type, ok := queryParams["type"]
+	return ok && len(request_type) > 0 && request_type[0] == "client"
 }
-
 
 func versionHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
@@ -105,10 +104,10 @@ func peerListHandler(writer http.ResponseWriter, request *http.Request) {
 	ipSlice = append(ipSlice, util.MakePeerItem(localIP, fileIndex))
 	json := ipSlice.Marshal()
 	writer.Write(json)
-  ip := net.ParseIP(strings.Split(request.RemoteAddr, ":")[0])
-  if !addressList.Contains(ip) && !isFromClient(request) {
-      addressSet.Add(ip)
-  }
+	ip := net.ParseIP(strings.Split(request.RemoteAddr, ":")[0])
+	if !addressList.Contains(ip) && !isFromClient(request) {
+		addressSet.Add(ip)
+	}
 }
 
 type gzipResponseWriter struct {
@@ -139,15 +138,15 @@ func makeGzipHandler(fn http.HandlerFunc) http.HandlerFunc {
 }
 
 func Initialize(newAddressList *addresslist.SafeIPList,
-    newAddressSet *addresslist.AddressSet,
-    newBlackWhiteList *addresslist.BlackWhiteList,
-    newFileIndex *fileindex.SafeFileList,
-    newLocalIP net.IP) {
-  addressList = newAddressList
-  addressSet = newAddressSet
-  blackWhiteList = newBlackWhiteList
-  fileIndex = newFileIndex
-  localIP = newLocalIP
+	newAddressSet *addresslist.AddressSet,
+	newBlackWhiteList *addresslist.BlackWhiteList,
+	newFileIndex *fileindex.SafeFileList,
+	newLocalIP net.IP) {
+	addressList = newAddressList
+	addressSet = newAddressSet
+	blackWhiteList = newBlackWhiteList
+	fileIndex = newFileIndex
+	localIP = newLocalIP
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/peerlist", makeBWListHandler(makeGzipHandler(peerListHandler)))

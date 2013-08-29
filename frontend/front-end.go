@@ -8,10 +8,10 @@ import (
 	"net"
 	"os"
 	"regexp"
-  "sandwich-go/addresslist"
+	"sandwich-go/addresslist"
 	"sandwich-go/client"
 	"sandwich-go/fileindex"
-  "sandwich-go/settings"
+	"sandwich-go/settings"
 	"sandwich-go/util"
 	"sort"
 	"strings"
@@ -130,8 +130,8 @@ func (filter SimpleFilter) Filter(toCompare IPFilePair) bool {
 }
 
 func ManifestMap() IPFilePairs {
-  fileManifest = client.CleanManifest(fileManifest)
-  log.Println("FileManifest was updated.")
+	fileManifest = client.CleanManifest(fileManifest)
+	log.Println("FileManifest was updated.")
 	fileList := make(IPFilePairs, 0, 100)
 	for ipString, tempFileList := range fileManifest {
 		ip := net.ParseIP(ipString)
@@ -188,11 +188,11 @@ func downloadThread() {
 }
 
 func Initialize(newAddressList *addresslist.SafeIPList,
-                newSandwichSettings *settings.Settings,
-                newShutdown func()) {
-  addressList = newAddressList
-  sandwichSettings = newSandwichSettings
-  shutdown = newShutdown
+	newSandwichSettings *settings.Settings,
+	newShutdown func()) {
+	addressList = newAddressList
+	sandwichSettings = newSandwichSettings
+	shutdown = newShutdown
 	go downloadThread()
 	go downloadThread()
 	go downloadThread()

@@ -1,9 +1,9 @@
 package fileindex
 
-import(
-	"net"
+import (
 	"encoding/json"
 	"log"
+	"net"
 )
 
 type FileManifest map[string]*FileList
@@ -41,4 +41,3 @@ func (man FileManifest) Put(address net.IP, list *FileList) {
 func (man FileManifest) Delete(address net.IP) {
 	delete(man, address.String())
 }
-

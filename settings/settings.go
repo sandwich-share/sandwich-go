@@ -1,22 +1,22 @@
 package settings
 
-import(
+import (
 	"encoding/xml"
-	"os"
 	"io/ioutil"
 	"log"
+	"os"
 )
 
 var SettingsPath string
 
 type Settings struct {
-	PingUntilFoundOnStart bool
-	WriteLogToScreen bool
-	LoopOnEmpty bool
-	DoNotBootStrap bool
-	CheckSumMaxSize int64
-	SandwichDirName string
-	LocalServerPort string
+	PingUntilFoundOnStart  bool
+	WriteLogToScreen       bool
+	LoopOnEmpty            bool
+	DoNotBootStrap         bool
+	CheckSumMaxSize        int64
+	SandwichDirName        string
+	LocalServerPort        string
 	DontOpenBrowserOnStart bool
 }
 
@@ -56,4 +56,3 @@ func Load() (*Settings, error) {
 	err = xml.Unmarshal(data, settings)
 	return settings, err
 }
-

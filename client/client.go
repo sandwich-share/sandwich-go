@@ -12,8 +12,8 @@ import (
 	"path/filepath"
 	"sandwich-go/addresslist"
 	"sandwich-go/fileindex"
-  "sandwich-go/settings"
-  "sandwich-go/util"
+	"sandwich-go/settings"
+	"sandwich-go/util"
 	"sort"
 	"strings"
 	"time"
@@ -23,9 +23,9 @@ func DownloadFile(address net.IP, filePath string) error {
 	if !blackWhiteList.OK(address) {
 		return illegalIPError
 	}
-  log.Println("Beginning download of " + filePath)
-	conn, err := net.DialTimeout("tcp", address.String() + util.GetPort(address),
-    2*time.Minute)
+	log.Println("Beginning download of " + filePath)
+	conn, err := net.DialTimeout("tcp", address.String()+util.GetPort(address),
+		2*time.Minute)
 	if err != nil {
 		return err
 	}
@@ -33,7 +33,7 @@ func DownloadFile(address net.IP, filePath string) error {
 
 	url := url.URL{}
 	url.Path = filePath
-	request, err := http.NewRequest("GET", "/files/" + url.String(), nil)
+	request, err := http.NewRequest("GET", "/files/"+url.String(), nil)
 	if err != nil {
 		return err
 	}
@@ -74,7 +74,7 @@ func DownloadFile(address net.IP, filePath string) error {
 		}
 	}
 	err = file.Close()
-  log.Println("File download complete: " + path.Join(util.SandwichPath, filePath))
+	log.Println("File download complete: " + path.Join(util.SandwichPath, filePath))
 	return err
 }
 
@@ -97,7 +97,7 @@ func GetVersion(address net.IP) (string, error) {
 }
 
 func BuildFileManifest() (fileManifest fileindex.FileManifest) {
-  fileManifest = fileindex.NewFileManifest()
+	fileManifest = fileindex.NewFileManifest()
 	peerList := addressList.Contents()
 	out1 := make(chan net.IP)
 	out2 := make(chan net.IP)
@@ -136,7 +136,7 @@ func BuildFileManifest() (fileManifest fileindex.FileManifest) {
 		}
 	}
 	log.Println("File index created")
-  return
+	return
 }
 
 func GetPeerList(address net.IP) (addresslist.PeerList, error) {
@@ -188,9 +188,9 @@ func updateAddressList(newList addresslist.PeerList) {
 	for _, value := range reduceMap {
 		resultList = append(resultList, value)
 	}
-  if len(resultList) > 0 {
-	  util.Save(resultList)
-  }
+	if len(resultList) > 0 {
+		util.Save(resultList)
+	}
 	addressList.Copy(resultList)
 }
 
@@ -207,15 +207,15 @@ func Ping(address net.IP) bool {
 }
 
 func Initialize(newAddressList *addresslist.SafeIPList,
-    newAddressSet *addresslist.AddressSet,
-    newBlackWhiteList *addresslist.BlackWhiteList,
-    newLocalIp net.IP,
-    newSettings *settings.Settings) {
-  addressList = newAddressList
-  addressSet = newAddressSet
-  blackWhiteList = newBlackWhiteList
-  localIP = newLocalIp
-  sandwichSettings = newSettings
+	newAddressSet *addresslist.AddressSet,
+	newBlackWhiteList *addresslist.BlackWhiteList,
+	newLocalIp net.IP,
+	newSettings *settings.Settings) {
+	addressList = newAddressList
+	addressSet = newAddressSet
+	blackWhiteList = newBlackWhiteList
+	localIP = newLocalIp
+	sandwichSettings = newSettings
 	if addressList.Len() == 0 && !sandwichSettings.LoopOnEmpty {
 		log.Fatal("AddressList ran out of peers")
 	}
@@ -231,7 +231,7 @@ func CleanManifest(fileManifest fileindex.FileManifest) fileindex.FileManifest {
 	for _, entry := range addressList {
 		fileIndex, ok := fileManifest[entry.IP.String()]
 		if ok && (entry.IndexHash == fileIndex.IndexHash ||
-        fileIndex.TimeStamp.After(entry.LastSeen)) {
+			fileIndex.TimeStamp.After(entry.LastSeen)) {
 			continue
 		} else {
 			log.Println("Updated entry")
@@ -242,5 +242,5 @@ func CleanManifest(fileManifest fileindex.FileManifest) fileindex.FileManifest {
 			fileManifest[entry.IP.String()] = index
 		}
 	}
-  return fileManifest
+	return fileManifest
 }

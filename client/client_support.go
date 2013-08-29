@@ -11,14 +11,14 @@ import (
 	"net/http"
 	"sandwich-go/addresslist"
 	"sandwich-go/fileindex"
-  "sandwich-go/settings"
-  "sandwich-go/util"
+	"sandwich-go/settings"
+	"sandwich-go/util"
 	"strings"
 	"time"
 )
 
-var addressList *addresslist.SafeIPList //Thread safe
-var addressSet *addresslist.AddressSet //Thread safe
+var addressList *addresslist.SafeIPList        //Thread safe
+var addressSet *addresslist.AddressSet         //Thread safe
 var blackWhiteList *addresslist.BlackWhiteList //Thread safe
 var illegalIPError = errors.New("The requested ip is illegal")
 var localIP net.IP
@@ -29,8 +29,8 @@ func get(address net.IP, extension string) ([]byte, error) {
 	if !blackWhiteList.OK(address) {
 		return nil, illegalIPError
 	}
-	conn, err := net.DialTimeout("tcp", address.String() + util.GetPort(address),
-    2*time.Second)
+	conn, err := net.DialTimeout("tcp", address.String()+util.GetPort(address),
+		2*time.Second)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func get(address net.IP, extension string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-  buffer := bufio.NewReader(conn)
+	buffer := bufio.NewReader(conn)
 	response, err := http.ReadResponse(buffer, request)
 	if err != nil {
 		return nil, err
@@ -83,7 +83,7 @@ func aggregate(manifest, outManifest fileindex.FileManifest) fileindex.FileManif
 	for ip, fileList := range manifest {
 		outManifest[ip] = fileList
 	}
-  return outManifest
+	return outManifest
 }
 
 func removeDeadEntries(newList addresslist.PeerList) addresslist.PeerList {
@@ -125,7 +125,7 @@ func keepAliveLoop() {
 				continue //shit happens but we do not want a defunct list
 			}
 		} else if addressList.Len() == 0 {
-        if sandwichSettings.LoopOnEmpty {
+			if sandwichSettings.LoopOnEmpty {
 				time.Sleep(5 * time.Second)
 				continue
 			}
@@ -136,13 +136,13 @@ func keepAliveLoop() {
 			peerList, err = GetPeerList(entry.IP)
 			addressList.RemoveAt(index)
 			if err != nil { //The peer gets deleted from the list if error
-        //Remember to delete them when merging list
+				//Remember to delete them when merging list
 				removeSet[entry.IP.String()] = time.Now()
 				log.Println(err)
 				continue //shit happens but we do not want a defunct list
 			}
 			addressList.Add(&addresslist.PeerItem{entry.IP, entry.IndexHash,
-        time.Now()})
+				time.Now()})
 		}
 		updateAddressList(peerList)
 		select {

@@ -1,23 +1,23 @@
 package fileindex
 
-import(
-	"log"
-	"encoding/json"
-	"time"
+import (
 	"encoding/binary"
+	"encoding/json"
 	"hash/crc32"
+	"log"
+	"time"
 )
 
 type FileItem struct {
 	FileName string
-	Size uint64
+	Size     uint64
 	CheckSum uint32
 }
 
 type FileList struct {
 	IndexHash uint32
 	TimeStamp time.Time
-	List []*FileItem
+	List      []*FileItem
 }
 
 func (item *FileItem) Copy() *FileItem {
@@ -65,13 +65,13 @@ func (list *FileList) Remove(newList ...string) {
 	subtract := 0
 	i := 0
 	for j, elem := range list.List {
-		list.List[j - subtract] = elem
+		list.List[j-subtract] = elem
 		if i < len(newList) && newList[i] == list.List[j].FileName {
 			i++
 			subtract++
 		}
 	}
-	list.List = list.List[:len(list.List) - subtract]
+	list.List = list.List[:len(list.List)-subtract]
 }
 
 func (list *FileList) RemoveAt(indexList ...int) {
@@ -79,13 +79,13 @@ func (list *FileList) RemoveAt(indexList ...int) {
 	i := 0
 	for j := 0; j < len(list.List); j++ {
 		elem := list.List[j]
-		list.List[j - subtract] = elem
+		list.List[j-subtract] = elem
 		if i < len(indexList) && indexList[i] == j {
 			i++
 			subtract++
 		}
 	}
-	list.List = list.List[:len(list.List) - subtract]
+	list.List = list.List[:len(list.List)-subtract]
 }
 
 func (list *FileList) UpdateHash() {
@@ -101,4 +101,3 @@ func (list *FileList) UpdateHash() {
 	list.IndexHash = crc32.ChecksumIEEE(data)
 	list.TimeStamp = time.Now()
 }
-

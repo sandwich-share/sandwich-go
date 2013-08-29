@@ -1,20 +1,20 @@
 package directory
 
-import(
-	"log"
+import (
+	"code.google.com/p/go.exp/fsnotify"
+	"hash/crc32"
 	"io"
 	"io/ioutil"
-	"hash/crc32"
+	"log"
 	"os"
-	"time"
-	"sync"
-	"unicode/utf8"
 	"path/filepath"
 	"sandwich-go/fileindex"
-	"code.google.com/p/go.exp/fsnotify"
+	"sync"
+	"time"
+	"unicode/utf8"
 )
 
-const ChunkSize = 256*1024
+const ChunkSize = 256 * 1024
 
 var SandwichPath string
 var watcher *fsnotify.Watcher
@@ -74,7 +74,7 @@ func GetFileItem(filePath string, info os.FileInfo) (*fileindex.FileItem, error)
 			return nil, err
 		}
 		checksum = GetFileChecksum(file)
-		file.Close();
+		file.Close()
 	} else {
 		checksum = 0
 	}
@@ -159,7 +159,7 @@ func StartWatch(dir string, fileIndex *fileindex.SafeFileList) {
 				if err == nil && info.IsDir() {
 					fileList := BuildFileList("", fullName)
 					fileIndex.Concat(fileList)
-          log.Println(fullName + " was added to the manifest.")
+					log.Println(fullName + " was added to the manifest.")
 				} else if err == nil {
 					fileItem, err := GetFileItemName(fullName)
 					if err == nil { //Otherwise the file was deleted before we could create it
@@ -172,25 +172,24 @@ func StartWatch(dir string, fileIndex *fileindex.SafeFileList) {
 				}
 			case event.IsDelete():
 				fileIndex.Remove(name)
-        log.Println(name + " was removed from the manifest.")
+				log.Println(name + " was removed from the manifest.")
 			case event.IsModify():
 				fileIndex.Remove(name)
 				fileItem, err := GetFileItemName(fullName)
 				if err == nil { //Otherwise the file was deleted before we could create it
 					if utf8.ValidString(fileItem.FileName) {
 						fileList.Add(fileItem)
-            log.Println(fullName + " was added to the manifest.")
+						log.Println(fullName + " was added to the manifest.")
 					} else {
 						log.Println("Hey bra, you cannot have non-utf8 encoded file names")
 					}
 				}
 			case event.IsRename():
 				fileIndex.Remove(name)
-        log.Println(name + " was removed from the manifest.")
+				log.Println(name + " was removed from the manifest.")
 			}
 			lock.Signal()
 		}
 		log.Println("Watch loop exited")
 	}()
 }
-
