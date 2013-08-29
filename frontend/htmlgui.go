@@ -1,4 +1,4 @@
-package main
+package frontend
 
 import (
 	"code.google.com/p/go.net/websocket"
@@ -9,7 +9,6 @@ import (
 	"sandwich-go/client"
 	"sandwich-go/util"
 	"strconv"
-	"sync/atomic"
 	"time"
 )
 
@@ -57,9 +56,9 @@ func peerHandler(w http.ResponseWriter, r *http.Request) {
 	path := r.FormValue("path")
 	if peerCacheIP != peer_ip {
 		if timeOut == nil || !timeOut.Stop() {
-			FileManifest = client.CleanManifest(FileManifest)
+			fileManifest = client.CleanManifest(fileManifest)
 		}
-		x := FileManifest[peer_ip]
+		x := fileManifest[peer_ip]
 		if x != nil {
 			peerCache = makeFolders(x.List)
 			peerCacheIP = peer_ip
@@ -67,9 +66,7 @@ func peerHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "[]")
 			return
 		}
-		timeOut = time.AfterFunc(time.Minute, func() {
-			atomic.StoreInt32(&IsCleanManifest, 0) //Timed out let the Manifest get dirty
-		})
+		timeOut = time.AfterFunc(time.Minute, func() {})
 	}
 	step, _ := strconv.Atoi(r.FormValue("step"))
 	start, _ := strconv.Atoi(r.FormValue("start"))
@@ -119,7 +116,7 @@ func localVersionHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func killHandler(w http.ResponseWriter, r *http.Request) {
-	Shutdown()
+	shutdown()
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
@@ -131,20 +128,20 @@ func settingsHandler(w http.ResponseWriter, r *http.Request) {
 		dirname := r.FormValue("dir")
 		localport := r.FormValue("port")
 		dontopenbrowser := r.FormValue("openBrowser") == "false"
-		new_settings := Settings
+		new_settings := sandwichSettings
 		new_settings.SandwichDirName = dirname
 		new_settings.LocalServerPort = localport
 		new_settings.DontOpenBrowserOnStart = dontopenbrowser
 		new_settings.Save()
 	} else {
-		json_res, _ := json.Marshal(Settings)
+		json_res, _ := json.Marshal(sandwichSettings)
 		w.Write(json_res)
 	}
 }
 
 func writePeers() {
 	peerList := make([]IPPort, 0, 10)
-	for _, peer := range AddressList.Contents() {
+	for _, peer := range addressList.Contents() {
 		peerList = append(peerList, IPPort{peer.IP.String(), util.GetPort(peer.IP)})
 	}
 	json_res, _ := json.Marshal(peerList)
@@ -163,6 +160,6 @@ func InitializeFancyStuff() {
 	mux.HandleFunc("/settings", settingsHandler)
 	mux.Handle("/peerSocket", websocket.Handler(peerSocketHandler))
 	mux.Handle("/static/", http.FileServer(http.Dir("./")))
-	srv := &http.Server{Handler: mux, Addr: "localhost:" + Settings.LocalServerPort}
+	srv := &http.Server{Handler: mux, Addr: "localhost:" + sandwichSettings.LocalServerPort}
 	srv.ListenAndServe()
 }

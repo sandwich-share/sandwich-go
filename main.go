@@ -14,6 +14,7 @@ import (
 	"sandwich-go/client"
 	"sandwich-go/directory"
 	"sandwich-go/fileindex"
+  "sandwich-go/frontend"
 	"sandwich-go/server"
 	"sandwich-go/settings"
 	"sandwich-go/util"
@@ -25,7 +26,6 @@ var AddressSet *addresslist.AddressSet         //Thread safe
 var FileIndex *fileindex.SafeFileList          //Thread safe
 var BlackWhiteList *addresslist.BlackWhiteList //Thread safe
 var FileManifest fileindex.FileManifest        //NOT THREAD SAFE
-var IsCleanManifest int32
 var LocalIP net.IP
 var Settings *settings.Settings
 
@@ -228,7 +228,7 @@ func main() {
 		return
 	}
 	go client.Initialize(AddressList, AddressSet, BlackWhiteList, LocalIP, Settings)
-	InitializeUserThread()
+	frontend.Initialize(AddressList, Settings, Shutdown)
 	if !Settings.WriteLogToScreen {
 		logWriter, err := os.Create("log")
 		if err != nil {

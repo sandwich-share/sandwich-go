@@ -1,4 +1,4 @@
-package main
+package frontend
 
 import (
 	"encoding/json"
@@ -8,8 +8,10 @@ import (
 	"net"
 	"os"
 	"regexp"
+  "sandwich-go/addresslist"
 	"sandwich-go/client"
 	"sandwich-go/fileindex"
+  "sandwich-go/settings"
 	"sandwich-go/util"
 	"sort"
 	"strings"
@@ -32,6 +34,11 @@ type FileOrDir struct {
 }
 
 type FileOrDirs []FileOrDir
+
+var addressList *addresslist.SafeIPList
+var fileManifest fileindex.FileManifest
+var sandwichSettings *settings.Settings
+var shutdown func()
 
 const (
 	DIR  = 0
@@ -123,10 +130,10 @@ func (filter SimpleFilter) Filter(toCompare IPFilePair) bool {
 }
 
 func ManifestMap() IPFilePairs {
-  FileManifest = client.CleanManifest(FileManifest)
+  fileManifest = client.CleanManifest(fileManifest)
   log.Println("FileManifest was updated.")
 	fileList := make(IPFilePairs, 0, 100)
-	for ipString, tempFileList := range FileManifest {
+	for ipString, tempFileList := range fileManifest {
 		ip := net.ParseIP(ipString)
 		port := util.GetPort(ip)
 		for _, fileItem := range tempFileList.List {
@@ -180,7 +187,12 @@ func downloadThread() {
 	}
 }
 
-func InitializeUserThread() {
+func Initialize(newAddressList *addresslist.SafeIPList,
+                newSandwichSettings *settings.Settings,
+                newShutdown func()) {
+  addressList = newAddressList
+  sandwichSettings = newSandwichSettings
+  shutdown = newShutdown
 	go downloadThread()
 	go downloadThread()
 	go downloadThread()
@@ -188,22 +200,22 @@ func InitializeUserThread() {
 	DownloadQueue = make(chan *IPFilePair, 1000)
 	file, err := os.Open(util.ConfPath("manifest-cache.json"))
 	if err != nil && os.IsNotExist(err) {
-		FileManifest = client.BuildFileManifest()
+		fileManifest = client.BuildFileManifest()
 	} else if err != nil {
 		log.Println(err)
-		FileManifest = client.BuildFileManifest()
+		fileManifest = client.BuildFileManifest()
 	} else if xml, err := ioutil.ReadAll(file); err != nil {
 		log.Println(err)
-		FileManifest = client.BuildFileManifest()
+		fileManifest = client.BuildFileManifest()
 		file.Close()
-	} else if FileManifest, err = fileindex.UnmarshalManifest(xml); err != nil {
-		FileManifest = client.BuildFileManifest()
+	} else if fileManifest, err = fileindex.UnmarshalManifest(xml); err != nil {
+		fileManifest = client.BuildFileManifest()
 	} else {
-		FileManifest = client.CleanManifest(FileManifest)
+		fileManifest = client.CleanManifest(fileManifest)
 		file.Close()
 	}
 	go InitializeFancyStuff()
-	if !Settings.DontOpenBrowserOnStart {
-		webbrowser.Open("http://localhost:" + Settings.LocalServerPort)
+	if !sandwichSettings.DontOpenBrowserOnStart {
+		webbrowser.Open("http://localhost:" + sandwichSettings.LocalServerPort)
 	}
 }
