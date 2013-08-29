@@ -164,7 +164,7 @@ func bootStrap() error {
 		log.Println(err)
 		return bootStrap()
 	}
-	iplist[0] = &addresslist.PeerItem{addrs[0], FileIndex.IndexHash(), FileIndex.TimeStamp()}
+	iplist[0] = &addresslist.PeerItem{addrs[0].To16(), FileIndex.IndexHash(), FileIndex.TimeStamp()}
 	AddressList = addresslist.New(iplist)
 	log.Println("Created new peerlist")
 	return nil

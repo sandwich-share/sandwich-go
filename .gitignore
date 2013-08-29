@@ -33,6 +33,7 @@ sandwich-go
 VERSION.go
 
 # config files
+conf/
 peerlist
 *.xml
 *.json
