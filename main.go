@@ -25,7 +25,6 @@ var AddressList *addresslist.SafeIPList        //Thread safe
 var AddressSet *addresslist.AddressSet         //Thread safe
 var FileIndex *fileindex.SafeFileList          //Thread safe
 var BlackWhiteList *addresslist.BlackWhiteList //Thread safe
-var FileManifest fileindex.FileManifest        //NOT THREAD SAFE
 var LocalIP net.IP
 var Settings *settings.Settings
 
@@ -171,10 +170,10 @@ func bootStrap() error {
 	return nil
 }
 
-func Shutdown() {
+func Shutdown(fileManifest fileindex.FileManifest) {
 	util.Save(AddressList.Contents())
 	ioutil.WriteFile(util.ConfPath("blackwhitelist.xml"), BlackWhiteList.Marshal(), os.ModePerm)
-	err := ioutil.WriteFile(util.ConfPath("manifest-cache.json"), FileManifest.Marshal(), os.ModePerm)
+	err := ioutil.WriteFile(util.ConfPath("manifest-cache.json"), fileManifest.Marshal(), os.ModePerm)
 	if err != nil {
 		log.Println(err)
 	}
@@ -199,7 +198,6 @@ func main() {
 		log.Fatal(err)
 	}
 	AddressSet = addresslist.NewAddressSet()
-	FileManifest = fileindex.NewFileManifest()
 	file, err := os.Open(util.ConfPath("blackwhitelist.xml"))
 	if err != nil {
 		BlackWhiteList = addresslist.NewBWList(Whitelist)

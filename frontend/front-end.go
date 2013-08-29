@@ -38,7 +38,7 @@ type FileOrDirs []FileOrDir
 var addressList *addresslist.SafeIPList
 var fileManifest fileindex.FileManifest
 var sandwichSettings *settings.Settings
-var shutdown func()
+var shutdown func(fileindex.FileManifest)
 
 const (
 	DIR  = 0
@@ -189,7 +189,7 @@ func downloadThread() {
 
 func Initialize(newAddressList *addresslist.SafeIPList,
 	newSandwichSettings *settings.Settings,
-	newShutdown func()) {
+	newShutdown func(fileindex.FileManifest)) {
 	addressList = newAddressList
 	sandwichSettings = newSandwichSettings
 	shutdown = newShutdown

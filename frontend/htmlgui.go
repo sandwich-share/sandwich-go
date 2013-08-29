@@ -116,7 +116,7 @@ func localVersionHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func killHandler(w http.ResponseWriter, r *http.Request) {
-	shutdown()
+	shutdown(fileManifest)
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
