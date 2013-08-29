@@ -55,6 +55,13 @@ func makeBWListHandler(function http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+func isFromClient(req *http.Request) bool {
+    queryParams := req.URL.Query()
+    request_type, ok := queryParams["type"]
+    return ok && len(request_type) > 0 && request_type[0] == "client"
+}
+
+
 func versionHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 	w.Write([]byte(util.VERSION + "\n"))
@@ -64,7 +71,7 @@ func pingHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 	w.Write([]byte("pong\n"))
 	ip := net.ParseIP(strings.Split(req.RemoteAddr, ":")[0])
-	if !addressList.Contains(ip) {
+	if !addressList.Contains(ip) && !isFromClient(req) {
 		addressSet.Add(ip)
 	}
 }
@@ -87,7 +94,7 @@ func indexForHandler(w http.ResponseWriter, req *http.Request) {
 	cacheLock.RUnlock()
 	log.Println("Sent index")
 	ip := net.ParseIP(strings.Split(req.RemoteAddr, ":")[0])
-	if !addressList.Contains(ip) {
+	if !addressList.Contains(ip) && !isFromClient(req) {
 		addressSet.Add(ip)
 	}
 }
@@ -98,7 +105,10 @@ func peerListHandler(writer http.ResponseWriter, request *http.Request) {
 	ipSlice = append(ipSlice, util.MakePeerItem(localIP, fileIndex))
 	json := ipSlice.Marshal()
 	writer.Write(json)
-	addressSet.Add(net.ParseIP(strings.Split(request.RemoteAddr, ":")[0]))
+  ip := net.ParseIP(strings.Split(request.RemoteAddr, ":")[0])
+  if !addressList.Contains(ip) && !isFromClient(request) {
+      addressSet.Add(ip)
+  }
 }
 
 type gzipResponseWriter struct {
