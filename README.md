@@ -63,9 +63,10 @@ the Port number, and the full file path of the file.
 
 `GET /peer`
 
-***Params:*** {'peer': [ip], 'path': [path]}
+***Params:*** {'peer': [ip], 'path': [path], 'start': [start], 'step': [step}
 
-Specify the peer to query, as well as the directory to display.
+Specify the peer to query, as well as the directory to display. See the
+`search` handler for an explanation of start/stop.
 
 ***Response:*** JSON list: [{'Type': [FileType], 'Name': [FileName]}
 
