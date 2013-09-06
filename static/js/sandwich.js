@@ -14,8 +14,7 @@ app.controller('MainCtrl', function($scope, $http, $timeout) {
   $scope.peerIP = '';
   var step = 100;
   var peerPort = '';
-  var peerWS = new WebSocket("ws://localhost:9001/peerSocket");
-
+  var peerWS = new WebSocket("ws://" + window.location.host + "/peerSocket"); 
   peerWS.onmessage = function(event) {
     $scope.$apply(function() {
       $scope.peerList = JSON.parse(event.data);
