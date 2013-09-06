@@ -225,7 +225,7 @@ func main() {
 	if err != nil {
 		return
 	}
-	go client.Initialize(AddressList, AddressSet, BlackWhiteList, LocalIP, Settings)
+	client.Initialize(AddressList, AddressSet, BlackWhiteList, LocalIP, Settings)
 	frontend.Initialize(AddressList, Settings, Shutdown)
 	if !Settings.WriteLogToScreen {
 		logWriter, err := os.Create("log")

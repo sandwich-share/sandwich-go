@@ -223,7 +223,7 @@ func Initialize(newAddressList *addresslist.SafeIPList,
 		for !Ping(addressList.At(0).IP) {
 		}
 	}
-	keepAliveLoop()
+	go keepAliveLoop()
 }
 
 func CleanManifest(fileManifest fileindex.FileManifest) fileindex.FileManifest {
