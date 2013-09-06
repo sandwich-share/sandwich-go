@@ -34,6 +34,71 @@ Each section provides its own URIs to which it will respond.
 
 The local server is the most integral part of Sandwich. The local server is responsible for interacting with the greater Sandwich network. It maintains an updated peer list and stores the file indexes for all remote peers on the network. It is also responsible for the bootstrapping operation.
 
+`GET /`
+
+***Response:*** Serves up the static HTML index page.
+
+---
+
+`GET /search`
+
+***Params:*** {'search': [searchterm],
+               'regex': [true|false],
+               'start': [startlocation],
+               'step': [stepsize]}
+
+`search` is either a plain text string or a regular expression to
+search for. This will search across all peers. `regex` should be the string
+'true' if you want it to be a regex search. `start` is the number to start
+returning from, and step is the number of items to return. To do pagination,
+you can return the first 100 with `start=0` and `step=100`, and then return
+the next 100 with `start=100`, `step=100`.
+
+***Response:*** JSON list: [{'IP': [ip], 'Port': [port], 'FileName': [filename]}]
+
+This will return a list of all files matching the query, giving you the IP,
+the Port number, and the full file path of the file.
+
+---
+
+`GET /peer`
+
+***Params:*** {'peer': [ip], 'path': [path]}
+
+Specify the peer to query, as well as the directory to display.
+
+***Response:*** JSON list: [{'Type': [FileType], 'Name': [FileName]}
+
+This will return a list of the files. For each file, it will specify the
+`FileType`, which is `0` for directories, and `1` for files. The name is the
+full path to the file.
+
+---
+
+`GET /download`
+
+***Params:*** {'ip': [ip], 'type': [FileType], 'file': [FileName]}
+
+Specify the IP to download from, the full path to download, and the FileType
+(0 for Dir, 1 for File). Downloading a directory will recursively download the
+directory. All files downloaded using this will download the files with the
+mirrored path of the source. This has no response.
+
+---
+
+`GET /version`
+
+***Response:*** [version]
+
+This just returns the current version number of Sandwich.
+
+---
+
+`GET /kill`
+
+Has no response. Just shuts down Sandwich.
+
+
 ##URIs
 
 `GET /ping`
