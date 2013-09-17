@@ -9,10 +9,23 @@ A client and server for Sandwich, written in Go.
 
 Sandwich is a distributed file-sharing application which operates entirely over HTTP/HTTPS. The current canonical implementation is in Go, but other implementations are welcomed and encouraged, as long as they are interoperable with other clients through the spec below.
 
+# Get Go and Sandwich
+
+```
+sudo apt-get install golang-go mercurial # This is specific to Ubuntu
+echo "export GOPATH=$HOME/go" >> ~/.profile
+mkdir -p $HOME/go/src
+cd $HOME/go/src
+git clone git://github.com/sandwich-share/sandwich-go
+```
+
+
 # To Build
 
-1. ./build.sh update
-2. ./build.sh
+```
+./build.sh update
+./build.sh
+```
 
 # Sandwich Spec
 
